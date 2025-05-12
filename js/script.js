@@ -4,6 +4,7 @@ const height = 1000 - margin.top - margin.bottom;
 
 Billpath = 'data/all_billionaires_1997_2024.csv'
 allData = []
+originalData = []
 options = ['nominal', 'normalized']
 type = options[1]
 
@@ -51,6 +52,17 @@ function setupBillSelector(){
 function createBillVis() {
     data = allData
     var series = 0
+
+    zoom = d3.zoom()
+        .scaleExtent([1,8])
+        .on("zoom", zoomed)
+
+    function zoomed(event) {
+        const { transform } = event;
+        g.attr("transform", transform)
+        g.attr("stroke-width", 1 / transform.k);
+    }
+
     if (type === "nominal") {
         series = d3.stack()
             .keys([...new Set(data.map(d => d.industry))].sort(d3.descending))
@@ -78,6 +90,8 @@ function createBillVis() {
     
     const svg = d3.select('#BillVis svg')
 
+    svg.on("click", reset)
+
     var Tooltip = d3.select("#BillVis")
         .append("div")
         .style("opacity", 0)
@@ -96,7 +110,6 @@ function createBillVis() {
             .style("stroke", "black")
     }
     var mousemove = function(event, d) {
-        console.log(d)
         key = d[0] === 0 ? "Technology" : "Other"
         net_worth = d.data[1].get(key)['total_net_worth']
         total = d.data[1].get("Other")['total_net_worth'] + d.data[1].get("Technology")['total_net_worth']
@@ -121,14 +134,18 @@ function createBillVis() {
             .style("stroke", "none")
     }
 
-    svg.append("g")
-        .selectAll("g")
+    g = svg.append("g")
+
+    
+    g.selectAll("g")
         .data(series)
         .join("g")
+        //.attr("class", "bar-container")
         .attr("fill", d => color(d.key))
         .selectAll("rect")
         .data(d => d)
         .join("rect")
+        .on("click", clicked)
         .attr("x", d => x(d.data[0]))
         .attr("y", d => y(d[1]))
         .attr("height", d => y(d[0]) - y(d[1]))
@@ -143,6 +160,7 @@ function createBillVis() {
         .selectAll("text")
         .data(d => d) 
         .join("text")
+        .attr("class", "bar-label")
         .attr("x", d => x(d.data[0]) + x.bandwidth() / 2) 
         .attr("y", d => (y(d[0]) + y(d[1])) / 2) 
         .attr("dy", "0.35em") 
@@ -163,6 +181,7 @@ function createBillVis() {
 
     svg.append("g")
         .attr("transform", `translate(0,${height - margin.bottom})`)
+        .attr("class", "axis")
         .call(d3.axisBottom(x).tickSizeOuter(0))
         .call(g => g.selectAll(".domain").remove());
     
@@ -170,15 +189,229 @@ function createBillVis() {
     // Append the vertical axis.
     if (type == "normalized") {
         svg.append("g")
+            .attr("class", "axis")
             .attr("transform", `translate(${margin.left},0)`)
             .call(d3.axisLeft(y).ticks(null, "s").tickFormat(d3.format(".0%")))
             .call(g => g.selectAll(".domain").remove());
     } else {
         svg.append("g")
+            .attr("class", "axis")
             .attr("transform", `translate(${margin.left},0)`)
             .call(d3.axisLeft(y).ticks(null, "s"))
             .call(g => g.selectAll(".domain").remove());
     }
+
+
+    function reset(event, d) {
+
+        d3.selectAll(".bar-segment")
+            .transition()        
+            .duration(750)       
+            .style("opacity", 0) 
+            .remove()
+
+
+        d3.selectAll(".axis")
+            .transition()        
+            .duration(750)
+            .style("opacity", 1) 
+
+        d3.selectAll(".bar-label")
+            .transition()        
+            .duration(750)
+            .style("opacity", 1) 
+
+        svg.transition().duration(750).call(
+            zoom.transform,
+            d3.zoomIdentity,
+            d3.zoomTransform(svg.node()).invert([width / 2, height / 2])
+        );
+    }
+
+    function clicked(event, d) {
+
+        coords = this.getBBox()
+        //possible solution, hide current bar and then overlay
+        /*
+        d3.select(this)
+            .attr("visibility", "hidden")
+        */
+
+        year = d.data[0]
+        key = d[0] === 0 ? "Technology" : "Other"
+        
+        //set how many people are highlighted
+        individuals = 8
+        selectedData = originalData.filter(person=> {
+            return person.year == year && person.industry == key
+            }
+        ).sort((a,b) => a.net_worth > b.net_worth)
+
+        barData = selectedData.slice(0, Math.min(individuals, selectedData.length))
+
+        if (selectedData.length > individuals) {
+            total = 0
+            for (let i = individuals; i < selectedData.length; i++) {
+                total += selectedData[i].net_worth
+            }
+            barData.push({
+                "name": "Others",
+                "year": year,
+                "industry": key,
+                "net_worth": total
+            })
+        }
+
+        barData.reverse()
+
+        cumulativeNetWorth = 0
+        barData = barData.map(d => {
+            const y0 = cumulativeNetWorth;
+            const y1 = cumulativeNetWorth + d.net_worth;
+            cumulativeNetWorth = y1;
+            return {
+                ...d, // Keep original properties
+                y0: y0,
+                y1: y1
+            };
+        });
+
+        total_net_worth = d.data[1].get(key)['total_net_worth']
+
+        const yHighlight = d3.scaleLinear()
+            .domain([0, total_net_worth])
+            .range([coords.y, coords.y + coords.height]);
+
+        const colorScale = d3.scaleOrdinal(d3.schemeCategory10) 
+            .domain(data.map(d => d.name));
+
+
+        d3.selectAll(".axis")
+            .transition()        
+            .duration(750)
+            .style("opacity", 0) 
+
+        d3.selectAll(".bar-label")
+            .transition()        
+            .duration(750)
+            .style("opacity", 0) 
+
+        event.stopPropagation();
+        
+        currentTransform = d3.zoomTransform(svg.node())
+
+        scaleFactor = 0.9
+        const scale = Math.min(zoom.scaleExtent()[1], 
+            scaleFactor / Math.max(coords.width / width, coords.height / height));
+
+        centerX = (coords.x + coords.width / 2)
+        centerY = (coords.y + coords.height / 2)
+
+        const newTransform = d3.zoomIdentity
+            .translate(width / 2, height / 2)
+            .scale(scale)
+            .translate(-centerX, -centerY);
+
+        var highlightOver = function(d) {
+            Tooltip
+                .style("opacity", 1)
+            d3.select(this)
+                .style("stroke", "black")
+        }
+        var highlightMove = function(event, d) {
+            
+            
+            text = ''
+            if (d.name == "Others") {
+                text = "Others are worth " + Math.round(d.net_worth).toLocaleString() + " billions"
+            } else {
+                text = d.name + " is worth " + Math.round(d.net_worth).toLocaleString() + " billions"
+            }
+            
+    
+            Tooltip
+                .html(text)
+                .style("left", (event.pageX + 10) + "px")
+                .style("top", (event.pageY + 10) + "px");
+        }
+        var highlightLeave = function(d) {
+            Tooltip
+                .style("opacity", 0)
+            d3.select(this)
+                .style("stroke", "none")
+        }
+
+        d3.selectAll(".bar-segment")
+            .remove()
+
+        
+        g.selectAll(".bar-segment")
+            .data(barData)
+            .enter()
+          .append("rect")
+            .attr("class", "bar-segment")
+            .attr("x", x(year)) 
+            .attr("width", x.bandwidth()) 
+            .attr("y", d => yHighlight(d.y0))
+            // height: The height of the segment, difference between bottom (y0) and top (y1) in scale
+            .attr("height", d => yHighlight(d.y1) - yHighlight(d.y0))
+            .attr("fill", d => colorScale(d.name))
+            .on("mouseover", highlightOver)
+            .on("mousemove", highlightMove)
+            .on("mouseleave", highlightLeave)
+
+        svg.transition()
+            .duration(750) 
+            .call(zoom.transform, newTransform)
+    }
+
+
+    svg.call(zoom)
+        .on("wheel.zoom", null)
+        .on("mousedown.zoom", null)
+        .on("touchstart.zoom", null)
+        .on("touchmove.zoom", null)
+        .on("touchend.zoom", null);
+}
+
+function BillInit(){
+    d3.csv(Billpath, convertTypes)
+    .then(data => {
+            const grouped = {};
+
+            
+            //aggregate net_worth and billionair count by year and industry 
+            for (const { name, year, industry, net_worth, country} of data) {
+
+                if (country === "United States" && year >= 2006) {
+                    originalData.push(
+                        {
+                            "name": name,
+                            "year": year,
+                            "industry": industry,
+                            "net_worth": net_worth
+                        }
+                    )
+                    const key = `${year}::${industry}`;
+                    if (!grouped[key]) {
+                        grouped[key] = {net_worth: 0, count: 0 };
+                    }
+                    grouped[key]['net_worth'] += net_worth;
+                    grouped[key]['count'] += 1;
+                }
+            }
+
+            
+            const result = Object.entries(grouped).map(([key, total]) => {
+                const [year, industry] = key.split("::");
+                return { year, industry, total_net_worth: Math.round(total['net_worth']), total_count: total['count'] };
+            });
+
+            allData = result
+            setupBillSelector()
+            createBillVis()
+        })
+    .catch(error => console.error('Error loading data:', error));
 }
 
 function BillInit(){
@@ -187,9 +420,17 @@ function BillInit(){
             const grouped = {};
 
             //aggregate net_worth and billionair count by year and industry 
-            for (const { year, industry, net_worth, country} of data) {
+            for (const { name, year, industry, net_worth, country} of data) {
 
                 if (country === "United States" && year >= 2006) {
+                    originalData.push(
+                        {
+                            "name": name,
+                            "year": year,
+                            "industry": industry,
+                            "net_worth": net_worth
+                        }
+                    )
                     const key = `${year}::${industry}`;
                     if (!grouped[key]) {
                         grouped[key] = {net_worth: 0, count: 0 };

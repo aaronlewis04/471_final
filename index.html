@@ -18,16 +18,22 @@
 
 
         <div id="JustinViz">
-            <h1>Share of Billionaires Net Worth Over Time in the US</h1>
-            <div id="controls">
-                Type: <select id="format" class="variable"></select>
+            <h3>Share of Billionaires Net Worth Over Time in the US</h3>
+            <p>
+                [Insert intro about graph] <br> Click on individual bars for more detailed breakdown. Click on blank space to return to regular view. 
+            </p>
+            <div id="outer-controls">
+                <div id="controls">
+                    Type: <select id="format" class="form-select"></select>
+                </div>
             </div>
             <div id="BillVis"></div> <!--  Will hold our visualization (SVG) -->
         </div>
     </div>
     
     <script src="https://d3js.org/d3.v7.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.25.6/d3-legend.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <script src="js/script.js"></script>
 </body>
 </html>

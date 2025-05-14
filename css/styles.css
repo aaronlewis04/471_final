@@ -61,3 +61,24 @@
     font-weight: lighter;
     font-family: Garamond Arial sans-serif;
 }
+
+#BillVis svg{
+    border: 2px solid #ddd;
+    display: block;
+    margin: auto;
+}
+
+#outer-controls {
+    display: flex;
+    justify-content: center; 
+    align-items: center;
+}
+
+#controls select {
+    max-width: 200px;
+}
+
+#controls {
+  display: flex; 
+  align-items: center; 
+}

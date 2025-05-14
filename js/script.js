@@ -1,5 +1,5 @@
 const margin = {top: 80, right: 60, bottom: 60, left: 100};
-const width = 1000 - margin.left - margin.right;
+const width = 1200 - margin.left - margin.right;
 const height = 1000 - margin.top - margin.bottom;
 
 Billpath = 'data/all_billionaires_1997_2024.csv'
@@ -28,7 +28,7 @@ function convertTypes(d) {
 }
 
 function setupBillSelector(){
-    const selector = d3.select('.variable')
+    const selector = d3.select('.form-select')
 
     selector
         .selectAll('myOptions')

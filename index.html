@@ -6,13 +6,112 @@
     <title>Final Project </title>
     <link rel="stylesheet" href="css/styles.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <<script src="https://unpkg.com/d3-simple-slider"></script>
 </head>
 <body>
     <div class="container"> <!-- Centers content and sets max width -->
         <h1> Final Project</h1>
         <h5> Created by Justin Zhai, Ezra Cohen, Mia Cohen, Saurav Patel, Aaron Lewis </h5>
         <br>
-
+        <div id="SauravViz">
+            <div class="container">
+                <h1> Visualizing and Comparing Market Caps of Major, Publicly Traded US-Based Companies</h1>
+                <!-- Introductory description and layout -->
+                <p style="margin-top: 30px;">
+                    The bar chart below represents the market caps for the largest companies traded publicly in the S&P 
+                    500. The list of companies is composed of the top 5 technology based companies and the top 5 non 
+                    technology based companies. The <code>’ticker’</code> dropdown also includes the options 
+                    <code>’Tech Industry’</code> and <code>’Other Industries’</code>.
+                    These market caps are summed and divided by the number of companies (5) to show the mean market cap data.
+                    <br><strong>The Other Industries 
+                        are representing the top 5 non tech companies, not the entire space of non tech companies.
+                    </strong> In other visualizations, tech industries only make up about 30% of the S&P 500 since 
+                    there are many more non tech companies.
+                </p>
+                
+                <div style="display: flex; justify-content: space-between; margin-top: 20px; gap: 40px;">
+                    <!-- Left Column: Tech Companies -->
+                    <div style="flex: 1;">
+                    <h3>Tech Companies</h3>
+                    <p><strong>AAPL (Apple Inc.):</strong> Apple designs and sells consumer electronics like the iPhone, Mac, and iPad, as well as software and digital services such as the App Store and iCloud.</p>
+                    <p><strong>AMZN (Amazon.com Inc.):</strong> Amazon is a global e-commerce and cloud computing giant, known for its online retail marketplace and AWS (Amazon Web Services) platform.</p>
+                    <p><strong>AVGO (Broadcom Inc.):</strong> Broadcom designs, develops, and supplies semiconductors and infrastructure software solutions for data centers, networking, and mobile devices.</p>
+                    <p><strong>GOOG (Alphabet Inc.):</strong> Alphabet is the parent company of Google, offering products in search, advertising, cloud computing, software, and hardware, including YouTube and Android.</p>
+                    <p><strong>MSFT (Microsoft Corp.):</strong> Microsoft develops software (like Windows and Office), cloud services (Azure), and hardware products, and owns LinkedIn and Xbox.</p>
+                    </div>
+                
+                    <!-- Right Column: Other Companies -->
+                    <div style="flex: 1;">
+                    <h3>Other Companies</h3>
+                    <p><strong>BRK (Berkshire Hathaway Inc.):</strong> Led by Warren Buffett, Berkshire Hathaway is a diversified holding company with businesses in insurance, railroads, utilities, and equity investments in major firms.</p>
+                    <p><strong>JPM (JPMorgan Chase & Co.):</strong> JPMorgan Chase is one of the largest global financial services firms, providing banking, investment, and asset management services.</p>
+                    <p><strong>LLY (Eli Lilly and Co.):</strong> Eli Lilly is a major pharmaceutical company focused on developing medicines for diabetes, cancer, mental health, and autoimmune diseases.</p>
+                    <p><strong>NVDA (NVIDIA Corp.):</strong> NVIDIA designs GPUs used in gaming, data centers, AI, and autonomous vehicles, and is a leader in AI hardware and software platforms.</p>
+                    <p><strong>WMT (Walmart Inc.):</strong> Walmart is the world’s largest retailer, operating a global chain of discount department stores and grocery supercenters.</p>
+                    </div>
+                </div>
+                
+                <p style="margin-top: 30px;">
+                    The bar chart below visualizes the change in market cap over the period of 15 years from 2010 
+                    to 2025 for each of these companies. There is also an option to view these companies as an 
+                    aggregate by clicking <code>'Tech Industry'</code> or <code>'Other Industries'</code> in the 
+                    ticker dropdown. You are also able to change the metric by seeing the year-to-year change in market 
+                    caps or viewing the percent change year-to-year, which normalizes the growth for all companies.
+                </p>
+                <h2 style="margin-top: 40px">Market Cap Trends of Major Companies (2010–2025)</h2>
+            
+                <div style="display: flex; justify-content: center;">
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                      <div>
+                        <label for="metricSelect"><strong>Metric:</strong></label><br>
+                        <select id="metricSelect">
+                          <option>Market Cap</option>
+                          <option>Percent Change (%)</option>
+                        </select>
+                      </div>
+                  
+                      <div>
+                        <label for="tickerSelect"><strong>Ticker:</strong></label><br>
+                        <select id="tickerSelect">
+                          <option>AAPL</option>
+                          <option>AMZN</option>
+                          <option>AVGO</option>
+                          <option>BRK</option>
+                          <option>GOOG</option>
+                          <option>JPM</option>
+                          <option>LLY</option>
+                          <option>MSFT</option>
+                          <option>NVDA</option>
+                          <option>WMT</option>
+                          <option>Tech Industry</option>
+                          <option>Other Industries</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+        
+                <!-- Main chart -->
+                <div style="text-align: center;">
+                    <div id="vis"></div>
+                </div>
+                <p style="margin-top: 30px;">
+                    The chart below allows us to see how the top 5 tech based companies and the top 5 non tech based
+                    companies share the market space in relation to each other. We are able to view the data by seeing how
+                    the companies grow and shrink in respect to each other over the time period of 2010 to 2025.<br>  
+                    <strong>
+                        Again, this is only reflective of the top 5 tech companies and top 5 non tech companies.
+                    </strong>
+                </p>
+                <!-- Title for pie chart -->
+                <h2 style="margin-top: 40px;">Tech vs Other Industry: Market Cap Distribution<br></h2>
+        
+                <div id="vis2" style="margin-bottom: 40px;"></div>
+            </div>
+        
+            <!-- Load D3.js -->
+            <script src="https://d3js.org/d3.v7.min.js"></script>
+            <script src="js/saurav.js"></script>
+        </div>
         <div class="d-flex justify-content-between flex-wrap mb-4">
             <iframe class="flex-fill me-2" style="height:514px; min-width: 48%;" frameborder="0"
               src="https://observablehq.com/embed/63cc2b4d72b05bec@285?cells=chart_1"></iframe>
@@ -24,25 +123,27 @@
          <br>
 
     
-        <div id="JustinViz">
+         <div id="JustinViz" style="text-align: center;">
             <h3>Share of Billionaires Net Worth Over Time in the US</h3>
             <p>
                 [Insert intro about graph] <br> Click on individual bars for more detailed breakdown. Click on blank space to return to regular view. 
             </p>
+        
             <div id="outer-controls">
                 <div id="controls">
                     Type: <select id="format" class="form-select"></select>
                 </div>
             </div>
+        
             <div id="BillVis"></div> <!--  Will hold our visualization (SVG) -->
-
-            <iframe width="900" height="700" frameborder="0"
-            src="https://observablehq.com/embed/49d4413d7f673ae9?cells=chart"></iframe>
-
-        <iframe width="100%" height="514" frameborder="0"
-            src="https://observablehq.com/embed/b615306c47f03901@85?cells=chart"></iframe>
-
-
+        
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
+                <iframe width="900" height="700" frameborder="0"
+                src="https://observablehq.com/embed/49d4413d7f673ae9?cells=chart"></iframe>
+        
+                <iframe width="900" height="700" frameborder="0"
+                src="https://observablehq.com/embed/b615306c47f03901@85?cells=chart"></iframe>
+            </div>
         </div>
     </div>
     

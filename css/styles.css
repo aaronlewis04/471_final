@@ -1,9 +1,11 @@
 /* Reset default styles */
 * {
     font-family: Arial, sans-serif;
-    max-width: 1500px;
-    margin: 0px auto;
     line-height: 1.8;
+    box-sizing: border-box;
+}
+body {
+    margin: 5px;
 }
 
 /* Container styling for layout */

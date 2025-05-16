@@ -56,13 +56,165 @@ const yLabel = svg.append("text")
 
 function init() {
     d3.select("#metricSelect").property("value", "Market Cap");
-    d3.select("#tickerSelect").property("value", "AAPL");
+    d3.select("#tickerSelect").property("value", "Default");
     update();
 }
+function defaultStart() {
+  Promise.all([
+      d3.csv('data/TECH.csv', d3.autoType),
+      d3.csv('data/OTHER.csv', d3.autoType)
+  ]).then(([techData, otherData]) => {
+      techData.forEach((d, i) => {
+          d.year = +d.Year;
+          d.techMC = +d.MC;
+          d.otherMC = +otherData[i].MC;
+      });
+
+      // Clean chart
+      svg.selectAll(".axis, .grid, path, .y-zero-label, .zero-line, .dot, .area").remove();
+
+      // Update chart labels
+      chartTitle.text("Market Cap (2010–2025): Tech vs Other");
+      yLabel.text("Market Cap (Billions of Dollars)");
+
+      // Set Y scale
+      y = d3.scaleLinear()
+          .domain([0, d3.max(techData, d => Math.max(d.techMC, d.otherMC))])
+          .range([height, 0]);
+
+      // Draw axes
+      svg.append("g")
+          .attr("transform", `translate(0,${height})`)
+          .attr("class", "axis")
+          .call(d3.axisBottom(x).tickFormat(d3.format("d")).tickValues(d3.range(2010, 2026)));
+
+      svg.append("g")
+          .attr("class", "axis")
+          .call(d3.axisLeft(y).ticks(Math.ceil(y.domain()[1] / 500)).tickFormat(d3.format(",")));
+
+      // Add grid lines
+      svg.append("g")
+          .attr("class", "grid")
+          .call(d3.axisLeft(y).tickSize(-width).tickFormat("").ticks(6))
+          .selectAll(".tick")
+          .filter(d => d === 0)
+          .remove();
+
+      // Area under tech
+      const areaTech = d3.area()
+          .x(d => x(d.year))
+          .y0(height)
+          .y1(d => y(d.techMC));
+
+      svg.append("path")
+          .datum(techData)
+          .attr("class", "area")
+          .attr("fill", "lightgreen")
+          .attr("opacity", 0)
+          .attr("d", areaTech)
+          .transition()
+          .duration(500)
+          .attr("opacity", 0.4);
+
+      // Tech line
+      const techLine = d3.line()
+          .x(d => x(d.year))
+          .y(d => y(d.techMC));
+
+      const techPath = svg.append("path")
+          .datum(techData)
+          .attr("fill", "none")
+          .attr("stroke", "darkgreen")
+          .attr("stroke-width", 3)
+          .attr("d", techLine);
+
+      const totalLengthTech = techPath.node().getTotalLength();
+      techPath
+          .attr("stroke-dasharray", `${totalLengthTech} ${totalLengthTech}`)
+          .attr("stroke-dashoffset", totalLengthTech)
+          .transition()
+          .duration(500)
+          .ease(d3.easeLinear)
+          .attr("stroke-dashoffset", 0);
+
+      // Other line
+      const otherLine = d3.line()
+          .x(d => x(d.year))
+          .y(d => y(d.otherMC));
+
+      const otherPath = svg.append("path")
+          .datum(techData)
+          .attr("fill", "none")
+          .attr("stroke", "purple")
+          .attr("stroke-width", 3)
+          .attr("d", otherLine);
+
+      const totalLengthOther = otherPath.node().getTotalLength();
+      otherPath
+          .attr("stroke-dasharray", `${totalLengthOther} ${totalLengthOther}`)
+          .attr("stroke-dashoffset", totalLengthOther)
+          .transition()
+          .duration(500)
+          .ease(d3.easeLinear)
+          .attr("stroke-dashoffset", 0);
+
+      // Tooltip dots for tech
+      svg.selectAll(".dot-tech")
+          .data(techData)
+          .enter().append("circle")
+          .attr("class", "dot dot-tech")
+          .attr("cx", d => x(d.year))
+          .attr("cy", d => y(d.techMC))
+          .attr("r", 4)
+          .attr("fill", "darkgreen")
+          .on("mouseover", (event, d) => {
+              tooltip.html(`Year: ${d.year}<br>Tech: ${d.techMC.toLocaleString()} B`)
+                  .style("left", (event.pageX + 10) + "px")
+                  .style("top", (event.pageY - 28) + "px")
+                  .transition().duration(200)
+                  .style("opacity", 0.9);
+          })
+          .on("mousemove", event => {
+              tooltip
+                  .style("left", (event.pageX + 10) + "px")
+                  .style("top", (event.pageY - 28) + "px");
+          })
+          .on("mouseout", () => tooltip.transition().duration(200).style("opacity", 0));
+
+      // Tooltip dots for other
+      svg.selectAll(".dot-other")
+          .data(techData)
+          .enter().append("circle")
+          .attr("class", "dot dot-other")
+          .attr("cx", d => x(d.year))
+          .attr("cy", d => y(d.otherMC))
+          .attr("r", 4)
+          .attr("fill", "purple")
+          .on("mouseover", (event, d) => {
+              tooltip.html(`Year: ${d.year}<br>Other: ${d.otherMC.toLocaleString()} B`)
+                  .style("left", (event.pageX + 10) + "px")
+                  .style("top", (event.pageY - 28) + "px")
+                  .transition().duration(200)
+                  .style("opacity", 0.9);
+          })
+          .on("mousemove", event => {
+              tooltip
+                  .style("left", (event.pageX + 10) + "px")
+                  .style("top", (event.pageY - 28) + "px");
+          })
+          .on("mouseout", () => tooltip.transition().duration(200).style("opacity", 0));
+  });
+}
+
+
 
 function update() {
     const selectedMetric = d3.select("#metricSelect").property("value");
     const selectedTicker = d3.select("#tickerSelect").property("value");
+    if (selectedTicker === "Default") {
+      defaultStart();
+      return;
+  }
     let tickerFile;
     if (selectedTicker === "Tech Industry") {
         tickerFile = "TECH.csv";

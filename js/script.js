@@ -2,11 +2,18 @@ const margin = {top: 80, right: 60, bottom: 60, left: 100};
 const width = 1200 - margin.left - margin.right;
 const height = 1000 - margin.top - margin.bottom;
 
+
 Billpath = 'data/all_billionaires_1997_2024.csv'
 allData = []
 originalData = []
 options = ['nominal', 'normalized']
 type = options[1]
+
+// Create SVG
+const svg = d3.select('#BillVis')
+    .append('svg')
+    .attr('width', width)
+    .attr('height', height)
 
 function parseIndustry(d) {
     if (d.business_industries.replace(/[\[\]']/g, "").trim() === "Technology") {
@@ -374,6 +381,7 @@ function createBillVis() {
         .on("touchend.zoom", null);
 }
 
+/*
 function BillInit(){
     d3.csv(Billpath, convertTypes)
     .then(data => {
@@ -455,9 +463,7 @@ function BillInit(){
 
 window.addEventListener('load', BillInit);
 
-// Create SVG
-const svg = d3.select('#BillVis')
-    .append('svg')
-    .attr('width', width)
-    .attr('height', height)
 
+
+
+*/

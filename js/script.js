@@ -1,3 +1,5 @@
+//script for "Share of Billionaires Net Worth Over Time in the US" graph
+
 const margin = {top: 80, right: 60, bottom: 60, left: 100};
 const width = 1200 - margin.left - margin.right;
 const height = 1000 - margin.top - margin.bottom;
@@ -14,6 +16,7 @@ const svg = d3.select('#BillVis')
     .append('svg')
     .attr('width', width)
     .attr('height', height)
+
 
 function parseIndustry(d) {
     if (d.business_industries.replace(/[\[\]']/g, "").trim() === "Technology") {
@@ -34,6 +37,7 @@ function convertTypes(d) {
     }
 }
 
+//used to select normalized or nominal option for charts
 function setupBillSelector(){
     const selector = d3.select('.form-select')
 
@@ -42,34 +46,27 @@ function setupBillSelector(){
         .data(options)
         .enter()
         .append('option')
-        .text(d => d) // The displayed text
+        .text(d => d) 
         .attr("value",d => d)
 
     selector
         .on("change", function (event) {
-            let newVar = d3.select(this).property("value");
+            let newVar = d3.select(this).property("value")
             type = newVar
+
+            //remove old visualization and redraw 
             d3.select("#BillVis svg")
                 .selectAll('*') 
-                .remove(); 
-            createBillVis();
+                .remove()
+
+            createBillVis()
         })
     d3.select('#format').property('value', type)
 }
-function createBillVis() {
-    data = allData
-    var series = 0
 
-    zoom = d3.zoom()
-        .scaleExtent([1,8])
-        .on("zoom", zoomed)
-
-    function zoomed(event) {
-        const { transform } = event;
-        g.attr("transform", transform)
-        g.attr("stroke-width", 1 / transform.k);
-    }
-
+//create series used for stacked charts
+function createSeries(data) {
+    series = 0
     if (type === "nominal") {
         series = d3.stack()
             .keys([...new Set(data.map(d => d.industry))].sort(d3.descending))
@@ -83,6 +80,14 @@ function createBillVis() {
             (d3.index(data, d => d.year, d => d.industry))
     }
     
+    return series
+}
+
+function createBillVis() {
+    data = allData
+    series = createSeries(data)
+
+    //set up scales
     const x = d3.scaleBand()
         .domain([...new Set(data.map(d => d.year))].sort(d3.ascending))
         .range([margin.left, width - margin.right])
@@ -92,15 +97,15 @@ function createBillVis() {
         .domain([0, d3.max(series, d => d3.max(d, d => d[1]))])
         .rangeRound([height - margin.bottom, margin.top]);
   
-        const color = d3.scaleOrdinal()
+    const color = d3.scaleOrdinal()
         .range(["#04672b", "#88cd87"])
         .domain(series.map(d => d.key))
     
+
     const svg = d3.select('#BillVis svg')
 
-    svg.on("click", reset)
-
-    var Tooltip = d3.select("#BillVis")
+    //tooltip setup 
+    Tooltip = d3.select("#BillVis")
         .append("div")
         .style("opacity", 0)
         .attr("class", "tooltip")
@@ -117,7 +122,9 @@ function createBillVis() {
         d3.select(this)
             .style("stroke", "black")
     }
+
     var mousemove = function(event, d) {
+
         key = d[0] === 0 ? "Technology" : "Other"
         net_worth = d.data[1].get(key)['total_net_worth']
         total = d.data[1].get("Other")['total_net_worth'] + d.data[1].get("Technology")['total_net_worth']
@@ -135,6 +142,7 @@ function createBillVis() {
             .style("left", (event.pageX + 10) + "px")
             .style("top", (event.pageY + 10) + "px");
     }
+
     var mouseleave = function(d) {
         Tooltip
             .style("opacity", 0)
@@ -144,11 +152,10 @@ function createBillVis() {
 
     g = svg.append("g")
 
-    
+    //add all the bars
     g.selectAll("g")
         .data(series)
         .join("g")
-        //.attr("class", "bar-container")
         .attr("fill", d => color(d.key))
         .selectAll("rect")
         .data(d => d)
@@ -162,7 +169,7 @@ function createBillVis() {
         .on("mousemove", mousemove)
         .on("mouseleave", mouseleave)
 
-    
+    //put labels on top of the bars
     svg.select("g").selectAll("g") 
         .data(series)
         .selectAll("text")
@@ -183,17 +190,17 @@ function createBillVis() {
             }
             return value
         })
-        .attr("fill", "white") // Text color for visibility against colored bars
-        .style("font-size", "10px") // Adjust font size as needed
+        .attr("fill", "white") 
+        .style("font-size", "10px") 
         .style("pointer-events", "none"); 
-
+    
+    //add horizontal axis 
     svg.append("g")
         .attr("transform", `translate(0,${height - margin.bottom})`)
         .attr("class", "axis")
         .call(d3.axisBottom(x).tickSizeOuter(0))
         .call(g => g.selectAll(".domain").remove());
     
-
     // Append the vertical axis.
     if (type == "normalized") {
         svg.append("g")
@@ -209,7 +216,13 @@ function createBillVis() {
             .call(g => g.selectAll(".domain").remove());
     }
 
+    //create legend on top left corner 
+    svg.append("rect").attr("x",105).attr("y",20).attr("width", 10).attr("height", 10).style("fill", "#04672b")
+    svg.append("rect").attr("x",105).attr("y",40).attr("width", 10).attr("height", 10).style("fill", "#88cd87")
+    svg.append("text").attr("x", 120).attr("y", 25).text("Tech").style("font-size", "15px").attr("alignment-baseline","middle")
+    svg.append("text").attr("x", 120).attr("y", 45).text("Others").style("font-size", "15px").attr("alignment-baseline","middle")
 
+    //function to zoom out and reset to default bar chart
     function reset(event, d) {
 
         d3.selectAll(".bar-segment")
@@ -236,27 +249,27 @@ function createBillVis() {
         );
     }
 
+    //function to zoom into bar when clicked 
     function clicked(event, d) {
 
         coords = this.getBBox()
-        //possible solution, hide current bar and then overlay
-        /*
-        d3.select(this)
-            .attr("visibility", "hidden")
-        */
 
         year = d.data[0]
         key = d[0] === 0 ? "Technology" : "Other"
         
         //set how many people are highlighted
         individuals = 7
+
+        //filter data to the correct year + industry
         selectedData = originalData.filter(person=> {
             return person.year == year && person.industry == key
             }
         ).sort((a,b) => a.net_worth > b.net_worth)
 
+        //choose top X indivdiduals to display
         barData = selectedData.slice(0, Math.min(individuals, selectedData.length))
 
+        //aggregate the rest to a "Others" data bar
         if (selectedData.length > individuals) {
             total = 0
             for (let i = individuals; i < selectedData.length; i++) {
@@ -271,7 +284,8 @@ function createBillVis() {
         }
 
         barData.reverse()
-
+        
+        //create data for zoomed in stacked bar
         cumulativeNetWorth = 0
         barData = barData.map(d => {
             const y0 = cumulativeNetWorth;
@@ -286,15 +300,17 @@ function createBillVis() {
 
         total_net_worth = d.data[1].get(key)['total_net_worth']
 
+        //scales for detailed view 
         const yHighlight = d3.scaleLinear()
             .domain([0, total_net_worth])
             .range([coords.y, coords.y + coords.height]);
 
-            const colorScale = d3.scaleOrdinal()
+        const colorScale = d3.scaleOrdinal()
             .range(["#23171b","#4569ee","#26bce1","#3ff393","#95fb51","#ecd12e","#ff821d","#cb2f0d","#900c00"])
             .domain(data.map(d => d.name));
+        
 
-
+        //make axis disappear to make detailed view more focused
         d3.selectAll(".axis")
             .transition()        
             .duration(750)
@@ -307,8 +323,10 @@ function createBillVis() {
 
         event.stopPropagation();
         
+        //zoom stuff
         currentTransform = d3.zoomTransform(svg.node())
 
+        //controls how zoomed in the view is 
         scaleFactor = 0.9
         const scale = Math.min(zoom.scaleExtent()[1], 
             scaleFactor / Math.max(coords.width / width, coords.height / height));
@@ -316,19 +334,21 @@ function createBillVis() {
         centerX = (coords.x + coords.width / 2)
         centerY = (coords.y + coords.height / 2)
 
+        //scale and translate to selected bar 
         const newTransform = d3.zoomIdentity
             .translate(width / 2, height / 2)
             .scale(scale)
             .translate(-centerX, -centerY);
 
+        //tooltip stuff
         var highlightOver = function(d) {
             Tooltip
                 .style("opacity", 1)
             d3.select(this)
                 .style("stroke", "black")
         }
+
         var highlightMove = function(event, d) {
-            
             
             text = ''
             if (d.name == "Others") {
@@ -337,12 +357,12 @@ function createBillVis() {
                 text = d.name + " is worth " + Math.round(d.net_worth).toLocaleString() + " billions"
             }
             
-    
             Tooltip
                 .html(text)
                 .style("left", (event.pageX + 10) + "px")
                 .style("top", (event.pageY + 10) + "px");
         }
+
         var highlightLeave = function(d) {
             Tooltip
                 .style("opacity", 0)
@@ -350,19 +370,19 @@ function createBillVis() {
                 .style("stroke", "none")
         }
 
+        //remove old detailed, useful when users click another bar when in zoomed in view
         d3.selectAll(".bar-segment")
             .remove()
 
-        
+        //create detailed bars
         g.selectAll(".bar-segment")
             .data(barData)
             .enter()
-          .append("rect")
+            .append("rect")
             .attr("class", "bar-segment")
             .attr("x", x(year)) 
             .attr("width", x.bandwidth()) 
             .attr("y", d => yHighlight(d.y0))
-            // height: The height of the segment, difference between bottom (y0) and top (y1) in scale
             .attr("height", d => yHighlight(d.y1) - yHighlight(d.y0))
             .attr("fill", d => colorScale(d.name))
             .on("mouseover", highlightOver)
@@ -374,13 +394,26 @@ function createBillVis() {
             .call(zoom.transform, newTransform)
     }
 
+    //set up zoom stuff for clicking on bars
+    zoom = d3.zoom()
+        .scaleExtent([1,8])
+        .on("zoom", zoomed)
 
+    function zoomed(event) {
+        const { transform } = event;
+        g.attr("transform", transform)
+        g.attr("stroke-width", 1 / transform.k);
+    }
+
+    //override other zoom functionalities that we don't need 
     svg.call(zoom)
         .on("wheel.zoom", null)
         .on("mousedown.zoom", null)
         .on("touchstart.zoom", null)
         .on("touchmove.zoom", null)
         .on("touchend.zoom", null);
+
+    svg.on("click", reset)
 }
 
 function BillInit(){
@@ -392,6 +425,8 @@ function BillInit(){
             for (const { name, year, industry, net_worth, country} of data) {
 
                 if (country === "United States" && year >= 2006) {
+
+                    //keep a copy of the original data 
                     originalData.push(
                         {
                             "name": name,
@@ -405,6 +440,7 @@ function BillInit(){
                         grouped[key] = {net_worth: 0, count: 0 };
                     }
                     grouped[key]['net_worth'] += net_worth;
+                    //didn't end up being used
                     grouped[key]['count'] += 1;
                 }
             }

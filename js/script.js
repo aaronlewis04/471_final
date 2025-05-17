@@ -381,47 +381,6 @@ function createBillVis() {
         .on("touchend.zoom", null);
 }
 
-/*
-function BillInit(){
-    d3.csv(Billpath, convertTypes)
-    .then(data => {
-            const grouped = {};
-
-            
-            //aggregate net_worth and billionair count by year and industry 
-            for (const { name, year, industry, net_worth, country} of data) {
-
-                if (country === "United States" && year >= 2006) {
-                    originalData.push(
-                        {
-                            "name": name,
-                            "year": year,
-                            "industry": industry,
-                            "net_worth": net_worth
-                        }
-                    )
-                    const key = `${year}::${industry}`;
-                    if (!grouped[key]) {
-                        grouped[key] = {net_worth: 0, count: 0 };
-                    }
-                    grouped[key]['net_worth'] += net_worth;
-                    grouped[key]['count'] += 1;
-                }
-            }
-
-            
-            const result = Object.entries(grouped).map(([key, total]) => {
-                const [year, industry] = key.split("::");
-                return { year, industry, total_net_worth: Math.round(total['net_worth']), total_count: total['count'] };
-            });
-
-            allData = result
-            setupBillSelector()
-            createBillVis()
-        })
-    .catch(error => console.error('Error loading data:', error));
-}
-
 function BillInit(){
     d3.csv(Billpath, convertTypes)
     .then(data => {
@@ -462,8 +421,3 @@ function BillInit(){
 }
 
 window.addEventListener('load', BillInit);
-
-
-
-
-*/

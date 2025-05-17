@@ -60,306 +60,356 @@ function init() {
     update();
 }
 function defaultStart() {
+  const selectedMetric = d3.select("#metricSelect").property("value");
+
   Promise.all([
-      d3.csv('data/TECH.csv', d3.autoType),
-      d3.csv('data/OTHER.csv', d3.autoType)
+    d3.csv("data/TECH.csv", d3.autoType),
+    d3.csv("data/OTHER.csv", d3.autoType)
   ]).then(([techData, otherData]) => {
-      techData.forEach((d, i) => {
-          d.year = +d.Year;
-          d.techMC = +d.MC;
-          d.otherMC = +otherData[i].MC;
-      });
+    techData.sort((a, b) => +a.Year - +b.Year);
+    otherData.sort((a, b) => +a.Year - +b.Year);
 
-      // Clean chart
-      svg.selectAll(".axis, .grid, path, .y-zero-label, .zero-line, .dot, .area").remove();
+    const combinedData = techData.map((d, i) => {
+      const year = +d.Year;
+      const techMC = +d.MC;
+      const otherMC = +otherData[i].MC;
 
-      // Update chart labels
-      chartTitle.text("Market Cap (2010–2025): Tech vs Other");
-      yLabel.text("Market Cap (Billions of Dollars)");
+      const prevTechMC = i === 0 ? techMC : +techData[i - 1].MC;
+      const prevOtherMC = i === 0 ? otherMC : +otherData[i - 1].MC;
 
-      // Set Y scale
-      y = d3.scaleLinear()
-          .domain([0, d3.max(techData, d => Math.max(d.techMC, d.otherMC))])
-          .range([height, 0]);
+      const techChange = i === 0 ? 0 : ((techMC - prevTechMC) / prevTechMC) * 100;
+      const otherChange = i === 0 ? 0 : ((otherMC - prevOtherMC) / prevOtherMC) * 100;
 
-      // Draw axes
-      svg.append("g")
-          .attr("transform", `translate(0,${height})`)
-          .attr("class", "axis")
-          .call(d3.axisBottom(x).tickFormat(d3.format("d")).tickValues(d3.range(2010, 2026)));
+      return {
+        year,
+        techMC,
+        otherMC,
+        techChange,
+        otherChange
+      };
+    });
 
-      svg.append("g")
-          .attr("class", "axis")
-          .call(d3.axisLeft(y).ticks(Math.ceil(y.domain()[1] / 500)).tickFormat(d3.format(",")));
+    svg.selectAll(".axis, .grid, path, .y-zero-label, .zero-line, .dot, .area").remove();
 
-      // Add grid lines
-      svg.append("g")
-          .attr("class", "grid")
-          .call(d3.axisLeft(y).tickSize(-width).tickFormat("").ticks(6))
-          .selectAll(".tick")
-          .filter(d => d === 0)
-          .remove();
+    const titleMetric = selectedMetric === "Market Cap" ? "Market Cap" : "Percent Change (%)";
+    chartTitle.text(`${titleMetric} (2010–2025): Tech vs Other`);
+    yLabel.text(titleMetric);
 
-      // Area under tech
-      const areaTech = d3.area()
+    y = selectedMetric === "Market Cap"
+      ? d3.scaleLinear().domain([0, d3.max(combinedData, d => Math.max(d.techMC, d.otherMC))]).range([height, 0])
+      : d3.scaleLinear().domain([-100, 100]).range([height, 0]);
+
+    svg.append("g")
+      .attr("transform", `translate(0,${height})`)
+      .attr("class", "axis")
+      .call(d3.axisBottom(x).tickFormat(d3.format("d")).tickValues(d3.range(2010, 2026)));
+
+      const yAxisGroup = svg.append("g").attr("class", "axis")
+      .call(d3.axisLeft(y).ticks(selectedMetric === "Market Cap" ? 6 : 6)); 
+    
+
+    if (selectedMetric === "Percent Change") {
+      // Bold 0% tick label
+      yAxisGroup.selectAll(".tick text")
+        .style("font-weight", d => d === 0 ? "bold" : null);
+    
+      // Bold 0% tick line
+      yAxisGroup.selectAll(".tick line")
+        .attr("stroke", d => d === 0 ? "black" : null)
+        .attr("stroke-width", d => d === 0 ? 2 : 1);
+    
+      // Add bold 0% label on axis
+      yAxisGroup.append("text")
+        .attr("class", "y-zero-label")
+        .attr("x", -30)
+        .attr("y", y(0) + 5)
+        .attr("fill", "black")
+        .attr("font-weight", "bold")
+        .text("0%");
+    
+      // Add bold horizontal line at 0%
+      svg.append("line")
+        .attr("class", "zero-line")
+        .attr("x1", 0)
+        .attr("x2", width)
+        .attr("y1", y(0))
+        .attr("y2", y(0))
+        .attr("stroke", "black")
+        .attr("stroke-width", 2);
+    }
+    
+
+    svg.append("g")
+      .attr("class", "grid")
+      .call(d3.axisLeft(y).tickSize(-width).tickFormat("").ticks(6));
+
+    const techLine = d3.line()
+      .x(d => x(d.year))
+      .y(d => y(selectedMetric === "Market Cap" ? d.techMC : d.techChange));
+
+    const otherLine = d3.line()
+      .x(d => x(d.year))
+      .y(d => y(selectedMetric === "Market Cap" ? d.otherMC : d.otherChange));
+
+      if (selectedMetric === "Market Cap") {
+        // Highlight area between lines (segmented)
+        for (let i = 1; i < combinedData.length; i++) {
+          const prev = combinedData[i - 1];
+          const curr = combinedData[i];
+          const segData = [prev, curr];
+      
+          const isTechHigher = curr.techMC > curr.otherMC;
+      
+          const areaTechAbove = d3.area()
+            .x(d => x(d.year))
+            .y0(d => y(d.otherMC))
+            .y1(d => y(d.techMC));
+      
+          const areaOtherAbove = d3.area()
+            .x(d => x(d.year))
+            .y0(d => y(d.techMC))
+            .y1(d => y(d.otherMC));
+      
+          svg.append("path")
+            .datum(segData)
+            .attr("fill", isTechHigher ? "lightgreen" : "#d6eaf8")
+            .attr("opacity", 0.4)
+            .attr("d", isTechHigher ? areaTechAbove : areaOtherAbove);
+        }
+    
+        const otherArea = d3.area()
           .x(d => x(d.year))
           .y0(height)
-          .y1(d => y(d.techMC));
+          .y1(d => y(d.otherMC));
+      
+        svg.append("path")
+          .datum(combinedData)
+          .attr("fill", "#d6eaf8")
+          .attr("opacity", 0.3)
+          .attr("d", otherArea);
+      }
+      
+    
 
+    // Optional: blue area under Other line for Market Cap
+    if (selectedMetric === "Market Cap") {
+      const otherArea = d3.area()
+        .x(d => x(d.year))
+        .y0(height)
+        .y1(d => y(d.otherMC));
       svg.append("path")
-          .datum(techData)
-          .attr("class", "area")
-          .attr("fill", "lightgreen")
-          .attr("opacity", 0)
-          .attr("d", areaTech)
-          .transition()
-          .duration(500)
-          .attr("opacity", 0.4);
+        .datum(combinedData)
+        .attr("fill", "#d6eaf8")
+        .attr("opacity", 0.3)
+        .attr("d", otherArea);
+    }
 
-      // Tech line
-      const techLine = d3.line()
-          .x(d => x(d.year))
-          .y(d => y(d.techMC));
+    const techPath = svg.append("path")
+      .datum(combinedData)
+      .attr("fill", "none")
+      .attr("stroke", "darkgreen")
+      .attr("stroke-width", 3)
+      .attr("d", techLine);
 
-      const techPath = svg.append("path")
-          .datum(techData)
-          .attr("fill", "none")
-          .attr("stroke", "darkgreen")
-          .attr("stroke-width", 3)
-          .attr("d", techLine);
+    const otherPath = svg.append("path")
+      .datum(combinedData)
+      .attr("fill", "none")
+      .attr("stroke", "#5dade2")
+      .attr("stroke-width", 3)
+      .attr("d", otherLine);
 
-      const totalLengthTech = techPath.node().getTotalLength();
-      techPath
-          .attr("stroke-dasharray", `${totalLengthTech} ${totalLengthTech}`)
-          .attr("stroke-dashoffset", totalLengthTech)
-          .transition()
-          .duration(500)
-          .ease(d3.easeLinear)
-          .attr("stroke-dashoffset", 0);
+    // Tooltip dots
+    svg.selectAll(".dot-tech")
+      .data(combinedData)
+      .enter().append("circle")
+      .attr("class", "dot dot-tech")
+      .attr("cx", d => x(d.year))
+      .attr("cy", d => y(selectedMetric === "Market Cap" ? d.techMC : d.techChange))
+      .attr("r", 4)
+      .attr("fill", "darkgreen")
+      .on("mouseover", (event, d) => {
+        const value = selectedMetric === "Market Cap" ? `${d.techMC.toLocaleString()} B` : `${d.techChange.toFixed(1)}%`;
+        tooltip.html(`Year: ${d.year}<br>Tech: ${value}`)
+          .style("left", (event.pageX + 10) + "px")
+          .style("top", (event.pageY - 28) + "px")
+          .transition().duration(200).style("opacity", 0.9);
+      })
+      .on("mousemove", event => tooltip.style("left", (event.pageX + 10) + "px").style("top", (event.pageY - 28) + "px"))
+      .on("mouseout", () => tooltip.transition().duration(200).style("opacity", 0));
 
-      // Other line
-      const otherLine = d3.line()
-          .x(d => x(d.year))
-          .y(d => y(d.otherMC));
-
-      const otherPath = svg.append("path")
-          .datum(techData)
-          .attr("fill", "none")
-          .attr("stroke", "purple")
-          .attr("stroke-width", 3)
-          .attr("d", otherLine);
-
-      const totalLengthOther = otherPath.node().getTotalLength();
-      otherPath
-          .attr("stroke-dasharray", `${totalLengthOther} ${totalLengthOther}`)
-          .attr("stroke-dashoffset", totalLengthOther)
-          .transition()
-          .duration(500)
-          .ease(d3.easeLinear)
-          .attr("stroke-dashoffset", 0);
-
-      // Tooltip dots for tech
-      svg.selectAll(".dot-tech")
-          .data(techData)
-          .enter().append("circle")
-          .attr("class", "dot dot-tech")
-          .attr("cx", d => x(d.year))
-          .attr("cy", d => y(d.techMC))
-          .attr("r", 4)
-          .attr("fill", "darkgreen")
-          .on("mouseover", (event, d) => {
-              tooltip.html(`Year: ${d.year}<br>Tech: ${d.techMC.toLocaleString()} B`)
-                  .style("left", (event.pageX + 10) + "px")
-                  .style("top", (event.pageY - 28) + "px")
-                  .transition().duration(200)
-                  .style("opacity", 0.9);
-          })
-          .on("mousemove", event => {
-              tooltip
-                  .style("left", (event.pageX + 10) + "px")
-                  .style("top", (event.pageY - 28) + "px");
-          })
-          .on("mouseout", () => tooltip.transition().duration(200).style("opacity", 0));
-
-      // Tooltip dots for other
-      svg.selectAll(".dot-other")
-          .data(techData)
-          .enter().append("circle")
-          .attr("class", "dot dot-other")
-          .attr("cx", d => x(d.year))
-          .attr("cy", d => y(d.otherMC))
-          .attr("r", 4)
-          .attr("fill", "purple")
-          .on("mouseover", (event, d) => {
-              tooltip.html(`Year: ${d.year}<br>Other: ${d.otherMC.toLocaleString()} B`)
-                  .style("left", (event.pageX + 10) + "px")
-                  .style("top", (event.pageY - 28) + "px")
-                  .transition().duration(200)
-                  .style("opacity", 0.9);
-          })
-          .on("mousemove", event => {
-              tooltip
-                  .style("left", (event.pageX + 10) + "px")
-                  .style("top", (event.pageY - 28) + "px");
-          })
-          .on("mouseout", () => tooltip.transition().duration(200).style("opacity", 0));
+    svg.selectAll(".dot-other")
+      .data(combinedData)
+      .enter().append("circle")
+      .attr("class", "dot dot-other")
+      .attr("cx", d => x(d.year))
+      .attr("cy", d => y(selectedMetric === "Market Cap" ? d.otherMC : d.otherChange))
+      .attr("r", 4)
+      .attr("fill", "#5dade2")
+      .on("mouseover", (event, d) => {
+        const value = selectedMetric === "Market Cap" ? `${d.otherMC.toLocaleString()} B` : `${d.otherChange.toFixed(1)}%`;
+        tooltip.html(`Year: ${d.year}<br>Other: ${value}`)
+          .style("left", (event.pageX + 10) + "px")
+          .style("top", (event.pageY - 28) + "px")
+          .transition().duration(200).style("opacity", 0.9);
+      })
+      .on("mousemove", event => tooltip.style("left", (event.pageX + 10) + "px").style("top", (event.pageY - 28) + "px"))
+      .on("mouseout", () => tooltip.transition().duration(200).style("opacity", 0));
   });
 }
 
 
 
+
+
 function update() {
-    const selectedMetric = d3.select("#metricSelect").property("value");
-    const selectedTicker = d3.select("#tickerSelect").property("value");
-    if (selectedTicker === "Default") {
+  const selectedMetric = d3.select("#metricSelect").property("value");
+  const selectedTicker = d3.select("#tickerSelect").property("value");
+
+  if (selectedTicker === "Default") {
       defaultStart();
       return;
   }
-    let tickerFile;
-    if (selectedTicker === "Tech Industry") {
-        tickerFile = "TECH.csv";
-    } else if (selectedTicker === "Other Industries") {
-        tickerFile = "OTHER.csv";
-    } else {
-        tickerFile = selectedTicker.replace(/ /g, "_").replace(/\$/g, "") + ".csv";
-    }
 
-    d3.csv(`data/${tickerFile}`).then(data => {
-        let titleTicker = selectedTicker;
-        if (selectedTicker === "Tech Industry") titleTicker = "Tech Industries";
-        else if (selectedTicker === "Other Industry") titleTicker = "Other Industries";
-        const prefix = (selectedTicker === "Tech Industry" || selectedTicker === "Other Industry") ? "" : "$";
-        const titleMetric = selectedMetric === "Market Cap" ? "Market Cap" : "Percent Change";
-        chartTitle.text(`${titleMetric} (2010–2025) for ${prefix}${titleTicker}`);
-        yLabel.text(selectedMetric === "Market Cap" ? "Market Cap (Billions of Dollars)" : "Percent Change (%)");
+  let tickerFile;
+  if (selectedTicker === "Tech Industry") {
+      tickerFile = "TECH.csv";
+  } else if (selectedTicker === "Other Industries") {
+      tickerFile = "OTHER.csv";
+  } else {
+      tickerFile = selectedTicker.replace(/ /g, "_").replace(/\$/g, "") + ".csv";
+  }
 
-        const parsedData = data.map(d => ({
-            year: +d.Year,
-            marketCap: +d.MC,
-            change: +d.change
-        }));
+  // Determine company color style
+  const techCompanies = ["AAPL", "NVDA", "AMZN", "GOOG", "MSFT"];
+  const otherCompanies = ["JNJ", "JPM", "PG", "V", "XOM"];
+  const isTechCompany = techCompanies.includes(selectedTicker);
+  const lineColor = isTechCompany ? "darkgreen" : "#5dade2";
+  const areaColor = isTechCompany ? "lightgreen" : "#d6eaf8";
 
-        parsedData.sort((a, b) => a.year - b.year); // ensure left-to-right order
+  d3.csv(`data/${tickerFile}`).then(data => {
+      let titleTicker = selectedTicker;
+      if (selectedTicker === "Tech Industry") titleTicker = "Tech Industries";
+      else if (selectedTicker === "Other Industries") titleTicker = "Other Industries";
+      const prefix = (selectedTicker === "Tech Industry" || selectedTicker === "Other Industries") ? "" : "$";
+      const titleMetric = selectedMetric === "Market Cap" ? "Market Cap" : "Percent Change";
+      chartTitle.text(`${titleMetric} (2010–2025) for ${prefix}${titleTicker}`);
+      yLabel.text(selectedMetric === "Market Cap" ? "Market Cap (Billions of Dollars)" : "Percent Change (%)");
 
-        svg.selectAll(".axis, .grid, path, .y-zero-label, .zero-line, .dot, .area").remove();
+      const parsedData = data.map(d => ({
+          year: +d.Year,
+          marketCap: +d.MC,
+          change: +d.change
+      })).sort((a, b) => a.year - b.year);
 
-        y = selectedMetric === "Market Cap"
-            ? d3.scaleLinear().domain([0, 4000]).range([height, 0])
-            : d3.scaleLinear().domain([-250, 250]).range([height, 0]);
+      svg.selectAll(".axis, .grid, path, .y-zero-label, .zero-line, .dot, .area").remove();
 
-        svg.append("g")
-            .attr("transform", `translate(0,${height})`)
-            .attr("class", "axis")
-            .call(d3.axisBottom(x).tickFormat(d3.format("d")).tickValues(d3.range(2010, 2026)));
+      y = selectedMetric === "Market Cap"
+          ? d3.scaleLinear().domain([0, 4000]).range([height, 0])
+          : d3.scaleLinear().domain([-250, 250]).range([height, 0]);
 
-        const yAxisGroup = svg.append("g")
-            .attr("class", "axis")
-            .call(d3.axisLeft(y));
+      svg.append("g")
+          .attr("transform", `translate(0,${height})`)
+          .attr("class", "axis")
+          .call(d3.axisBottom(x).tickFormat(d3.format("d")).tickValues(d3.range(2010, 2026)));
 
-        if (selectedMetric === "Percent Change (%)") {
-            yAxisGroup.selectAll(".tick text").style("font-weight", d => d === 0 ? "bold" : null);
-            yAxisGroup.selectAll(".tick line")
-                .attr("stroke", d => d === 0 ? "black" : null)
-                .attr("stroke-width", d => d === 0 ? 2 : 1);
+      const yAxisGroup = svg.append("g")
+          .attr("class", "axis")
+          .call(d3.axisLeft(y).ticks(selectedMetric === "Market Cap" ? 9 : 6));
 
-            yAxisGroup.append("text")
-                .attr("class", "y-zero-label")
-                .attr("x", -30)
-                .attr("y", y(0) + 5)
-                .attr("fill", "black")
-                .attr("font-weight", "bold")
-                .text("0%");
+      if (selectedMetric === "Percent Change") {
+          yAxisGroup.selectAll(".tick text")
+              .style("font-weight", d => d === 0 ? "bold" : null);
 
-            svg.append("line")
-                .attr("class", "zero-line")
-                .attr("x1", 0)
-                .attr("x2", width)
-                .attr("y1", y(0))
-                .attr("y2", y(0))
-                .attr("stroke", "black")
-                .attr("stroke-width", 2);
-        }
+          yAxisGroup.selectAll(".tick line")
+              .attr("stroke", d => d === 0 ? "black" : null)
+              .attr("stroke-width", d => d === 0 ? 2 : 1);
 
-        svg.append("g")
-            .attr("class", "grid")
-            .call(d3.axisLeft(y).tickSize(-width).tickFormat("").ticks(6))
-            .selectAll(".tick")
-            .filter(d => d === 0)
-            .remove();
+          yAxisGroup.append("text")
+              .attr("class", "y-zero-label")
+              .attr("x", -30)
+              .attr("y", y(0) + 5)
+              .attr("fill", "black")
+              .attr("font-weight", "bold")
+              .text("0%");
 
-        const line = d3.line()
-            .defined(d => selectedMetric === "Market Cap" || d.change != null)
-            .x(d => x(d.year))
-            .y(d => y(selectedMetric === "Market Cap" ? d.marketCap : d.change));
+          svg.append("line")
+              .attr("class", "zero-line")
+              .attr("x1", 0)
+              .attr("x2", width)
+              .attr("y1", y(0))
+              .attr("y2", y(0))
+              .attr("stroke", "black")
+              .attr("stroke-width", 2);
+      }
 
-        const area = d3.area()
-            .defined(d => selectedMetric === "Market Cap" || d.change != null)
-            .x(d => x(d.year))
-            .y0(selectedMetric === "Market Cap" ? height : y(0))
-            .y1(d => y(selectedMetric === "Market Cap" ? d.marketCap : d.change));
+      svg.append("g")
+          .attr("class", "grid")
+          .call(d3.axisLeft(y).tickSize(-width).tickFormat("").ticks(6));
 
-        const path = svg.append("path")
-            .datum(parsedData)
-            .attr("fill", "none")
-            .attr("stroke", selectedMetric === "Market Cap" ? "darkgreen" : "steelblue")
-            .attr("stroke-width", 3)
-            .attr("d", line);
+      const line = d3.line()
+          .defined(d => selectedMetric === "Market Cap" || d.change != null)
+          .x(d => x(d.year))
+          .y(d => y(selectedMetric === "Market Cap" ? d.marketCap : d.change));
 
-        const totalLength = path.node().getTotalLength();
+      const area = d3.area()
+          .defined(d => selectedMetric === "Market Cap" || d.change != null)
+          .x(d => x(d.year))
+          .y0(selectedMetric === "Market Cap" ? height : y(0))
+          .y1(d => y(selectedMetric === "Market Cap" ? d.marketCap : d.change));
 
-        path
-            .attr("stroke-dasharray", `${totalLength} ${totalLength}`)
-            .attr("stroke-dashoffset", totalLength)
-            .transition()
-            .duration(500)
-            .ease(d3.easeLinear)
-            .attr("stroke-dashoffset", 0);
+      const path = svg.append("path")
+          .datum(parsedData)
+          .attr("fill", "none")
+          .attr("stroke", lineColor)
+          .attr("stroke-width", 3)
+          .attr("d", line);
 
-        svg.append("path")
-            .datum(parsedData)
-            .attr("class", "area")
-            .attr("fill", selectedMetric === "Market Cap" ? "lightgreen" : "#a2c4f9")
-            .attr("opacity", 0)
-            .attr("d", area)
-            .transition()
-            .duration(500)
-            .attr("opacity", 0.4);
+      const totalLength = path.node().getTotalLength();
 
-        // Add tooltip-enabled dots
-        svg.selectAll(".dot")
-            .data(parsedData)
-            .enter().append("circle")
-            .attr("class", "dot")
-            .attr("cx", d => x(d.year))
-            .attr("cy", d => y(selectedMetric === "Market Cap" ? d.marketCap : d.change))
-            .attr("r", 4)
-            .attr("fill", selectedMetric === "Market Cap" ? "darkgreen" : "steelblue")
-            .on("mouseover", (event, d) => {
-                const value = selectedMetric === "Market Cap"
-                    ? d.marketCap.toLocaleString() + " B"
-                    : d.change + "%";
-                tooltip
-                    .html(`Year: ${d.year}<br>${titleMetric}: ${value}`)
-                    .style("left", (event.pageX + 10) + "px")
-                    .style("top", (event.pageY - 28) + "px")
-                    .transition().duration(200)
-                    .style("opacity", 0.9);
-            })
-            .on("mousemove", event => {
-                tooltip
-                    .style("left", (event.pageX + 10) + "px")
-                    .style("top", (event.pageY - 28) + "px");
-            })
-            .on("mouseout", () => {
-                tooltip.transition().duration(200)
-                    .style("opacity", 0);
-            });
-    });
+      path.attr("stroke-dasharray", `${totalLength} ${totalLength}`)
+          .attr("stroke-dashoffset", totalLength)
+          .transition()
+          .duration(500)
+          .ease(d3.easeLinear)
+          .attr("stroke-dashoffset", 0);
+
+      svg.append("path")
+          .datum(parsedData)
+          .attr("class", "area")
+          .attr("fill", areaColor)
+          .attr("opacity", 0.4)
+          .attr("d", area);
+
+      svg.selectAll(".dot")
+          .data(parsedData)
+          .enter().append("circle")
+          .attr("class", "dot")
+          .attr("cx", d => x(d.year))
+          .attr("cy", d => y(selectedMetric === "Market Cap" ? d.marketCap : d.change))
+          .attr("r", 4)
+          .attr("fill", lineColor)
+          .on("mouseover", (event, d) => {
+              const value = selectedMetric === "Market Cap"
+                  ? d.marketCap.toLocaleString() + " B"
+                  : d.change + "%";
+              tooltip.html(`Year: ${d.year}<br>${titleMetric}: ${value}`)
+                  .style("left", (event.pageX + 10) + "px")
+                  .style("top", (event.pageY - 28) + "px")
+                  .transition().duration(200).style("opacity", 0.9);
+          })
+          .on("mousemove", event => {
+              tooltip.style("left", (event.pageX + 10) + "px")
+                  .style("top", (event.pageY - 28) + "px");
+          })
+          .on("mouseout", () => {
+              tooltip.transition().duration(200).style("opacity", 0);
+          });
+  });
 }
+
 
 // Initial draw
 init();
-
 
 // Pie chart visualization
 
@@ -408,7 +458,7 @@ const pieSvg = pieSvgContainer
 
 const pieColor = d3.scaleOrdinal()
   .domain(['Tech', 'Other'])
-  .range(['#e8b200', '#7e57c2']);
+  .range(['darkgreen', '#5dade2']);
 
 const arc = d3.arc()
   .innerRadius(pieRadius - 30)

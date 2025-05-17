@@ -280,7 +280,7 @@ function update() {
   }
 
   // Determine company color style
-  const techCompanies = ["AAPL", "NVDA", "AMZN", "GOOG", "MSFT"];
+  const techCompanies = ["AAPL", "NVDA", "AMZN", "GOOG", "MSFT", "Tech Industry"];
   const otherCompanies = ["JNJ", "JPM", "PG", "V", "XOM"];
   const isTechCompany = techCompanies.includes(selectedTicker);
   const lineColor = isTechCompany ? "darkgreen" : "#5dade2";

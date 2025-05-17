@@ -92,7 +92,8 @@ function createBillVis() {
         .domain([0, d3.max(series, d => d3.max(d, d => d[1]))])
         .rangeRound([height - margin.bottom, margin.top]);
   
-    const color = d3.scaleOrdinal(d3.schemePaired)
+        const color = d3.scaleOrdinal()
+        .range(["#04672b", "#88cd87"])
         .domain(series.map(d => d.key))
     
     const svg = d3.select('#BillVis svg')
@@ -248,7 +249,7 @@ function createBillVis() {
         key = d[0] === 0 ? "Technology" : "Other"
         
         //set how many people are highlighted
-        individuals = 8
+        individuals = 7
         selectedData = originalData.filter(person=> {
             return person.year == year && person.industry == key
             }
@@ -289,7 +290,8 @@ function createBillVis() {
             .domain([0, total_net_worth])
             .range([coords.y, coords.y + coords.height]);
 
-        const colorScale = d3.scaleOrdinal(d3.schemeCategory10) 
+            const colorScale = d3.scaleOrdinal()
+            .range(["#23171b","#4569ee","#26bce1","#3ff393","#95fb51","#ecd12e","#ff821d","#cb2f0d","#900c00"])
             .domain(data.map(d => d.name));
 
 

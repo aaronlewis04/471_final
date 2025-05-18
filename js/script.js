@@ -5,7 +5,7 @@ const width = 1200 - margin.left - margin.right;
 const height = 1000 - margin.top - margin.bottom;
 
 
-Billpath = 'data/all_billionaires_1997_2024.csv'
+Billpath = 'data/billionaires_fixed.csv'
 allData = []
 originalData = []
 options = ['nominal', 'normalized']
@@ -224,6 +224,16 @@ function createBillVis() {
     svg.append("text").attr("x", 120).attr("y", 25).text("Tech").style("font-size", "15px").attr("alignment-baseline","middle")
     svg.append("text").attr("x", 120).attr("y", 45).text("Others").style("font-size", "15px").attr("alignment-baseline","middle")
     
+
+    svg.append("text")
+    .text("Share of Billionaire Net Worth by 'Technology' vs 'Other' Billionaires")
+    .attr("x", 520)  // X position
+    .attr("y", 50)   // Y position
+    .attr("text-anchor", "middle") // or "middle", "end"
+    .style("fill", "black")
+    .style("font-size", "16px")
+    .style("font-weight", "bold")
+    .style("font-family", "sans-serif");
 
     //add clickable source
     link = svg.append("a")

@@ -10,6 +10,8 @@ allData = []
 originalData = []
 options = ['nominal', 'normalized']
 type = options[1]
+const dataSourceLink = "https://www.kaggle.com/datasets/guillemservera/forbes-billionaires-1997-2023"; // Replace with your data source URL
+const dataSourceText = "Source: Forbes Billionaire Evolution"; // Text to display for the link
 
 // Create SVG
 const svg = d3.select('#BillVis')
@@ -218,9 +220,24 @@ function createBillVis() {
 
     //create legend on top left corner 
     svg.append("rect").attr("x",105).attr("y",20).attr("width", 10).attr("height", 10).style("fill", "#04672b")
-    svg.append("rect").attr("x",105).attr("y",40).attr("width", 10).attr("height", 10).style("fill", "#88cd87")
+    svg.append("rect").attr("x",105).attr("y",40).attr("width", 10).attr("height", 10).style("fill", "#5dade2")
     svg.append("text").attr("x", 120).attr("y", 25).text("Tech").style("font-size", "15px").attr("alignment-baseline","middle")
     svg.append("text").attr("x", 120).attr("y", 45).text("Others").style("font-size", "15px").attr("alignment-baseline","middle")
+    
+
+    //add clickable source
+    link = svg.append("a")
+        .attr("xlink:href", dataSourceLink) 
+        .attr("target", "_blank")
+
+
+    link.append("text")
+        .text(dataSourceText)
+        .attr("x", width - 10) 
+        .attr("y", height - 10) 
+        .attr("text-anchor", "end") 
+        .style("fill", "blue") 
+        .style("cursor", "pointer")
 
     //function to zoom out and reset to default bar chart
     function reset(event, d) {

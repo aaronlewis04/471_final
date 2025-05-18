@@ -98,7 +98,7 @@ function createBillVis() {
         .rangeRound([height - margin.bottom, margin.top]);
   
     const color = d3.scaleOrdinal()
-        .range(["#04672b", "#88cd87"])
+        .range(["#04672b", "#5dade2"])
         .domain(series.map(d => d.key))
     
 

@@ -3,44 +3,85 @@
     font-family: Arial, sans-serif;
     line-height: 1.8;
     box-sizing: border-box;
-}
-body {
+ }
+ body {
     margin: 5px;
-}
-
-/* Container styling for layout */
-.container {
+ }
+ .button-link {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 10px 18px;
+    background-color: transparent;
+    color: #4a90e2;
+    border: 2px solid #4a90e2;
+    border-radius: 30px;
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.3s ease;
+ }
+ .button-link:hover {
+    background-color: #4a90e2;
+    color: white;
+ }
+ img {
+    width: 100%;
+    max-width: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 15px;
+  }
+ .container1 {
+  display: flex;
+  gap: 30px;
+  justify-content: space-between;
+ }
+ .column {
+  flex: 1;
+  background: white;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+ }
+ /* Container styling for layout */
+ .container {
     max-width: 1500px;
-    margin: 2rem auto; 
+    margin: 2rem auto;
     font-family: Arial, sans-serif;
-}
-
-
-#vis svg {
-    margin: 2rem 0; 
+ }
+ 
+ 
+ 
+ 
+ #vis svg {
+    margin: 2rem 0;
     border: 1px solid #ccc;
-}
-
-.x-axis path,
-.y-axis path,
-.x-axis line,
-.y-axis line {
+ }
+ 
+ 
+ .x-axis path,
+ .y-axis path,
+ .x-axis line,
+ .y-axis line {
     stroke: #333;
     shape-rendering: crispEdges;
-}
-
-.x-axis text,
-.y-axis text {
+ }
+ 
+ 
+ .x-axis text,
+ .y-axis text {
     font-size: 12px;
     font-family: Arial, sans-serif;
-}
-
-.axis-label {
+ }
+ 
+ 
+ .axis-label {
     font-size: 14px;
     font-weight: bold;
-}
-
-#tooltip {
+ }
+ 
+ 
+ #tooltip {
     position: absolute; /* So we can move it with the cursor */
     padding: 10px;
     background: white;
@@ -48,89 +89,104 @@ body {
     border-radius: 4px;
     pointer-events: none; /* Prevent tooltip from interfering with mouse events */
     font-size: 12px;
-}
-
-.map path {
+ }
+ 
+ 
+ .map path {
     fill: #fff;
     fill-opacity: 0;
     stroke: #aaa;
   }
-
-
-.label {
+ 
+ 
+ 
+ 
+ .label {
     fill: #000;
     font-size: small;
     font-weight: lighter;
     font-family: Garamond Arial sans-serif;
-}
-
-#BillVis svg{
+ }
+ 
+ 
+ #BillVis svg{
     border: 2px solid #ddd;
     display: block;
     margin: auto;
-}
-
-#outer-controls {
+ }
+ 
+ 
+ #outer-controls {
     display: flex;
-    justify-content: center; 
+    justify-content: center;
     align-items: center;
-}
-
-#controls select {
+ }
+ 
+ 
+ #controls select {
     max-width: 200px;
-}
-
-#controls {
-  display: flex; 
-  align-items: center; 
-}
-
-/* Saurav's CSS Down Here */
-.axis line,
-.axis path {
+ }
+ 
+ 
+ #controls {
+  display: flex;
+  align-items: center;
+ }
+ 
+ 
+ /* Saurav's CSS Down Here */
+ .axis line,
+ .axis path {
     stroke: #333;
     shape-rendering: crispEdges;
-}
-
-.grid line {
+ }
+ 
+ 
+ .grid line {
     stroke: #ccc;
     stroke-dasharray: 3;
-}
-
-/* Remove the top solid line on the graph */
-.grid path {
+ }
+ 
+ 
+ /* Remove the top solid line on the graph */
+ .grid path {
     display: none;
-}
-
-.x.label,
-.y.label {
+ }
+ 
+ 
+ .x.label,
+ .y.label {
     font-size: 14px;
     font-weight: bold;
     fill: #333;
-}
-
-.chart-title {
+ }
+ 
+ 
+ .chart-title {
     font-size: 20px;
     font-weight: bold;
     fill: #333;
-}
-
-.chart-title {
+ }
+ 
+ 
+ .chart-title {
     font-size: 20px;
     font-weight: bold;
     fill: #333;
-}
-
-#metricSelect {
+ }
+ 
+ 
+ #metricSelect {
     padding: 6px;
     font-size: 14px;
-}
-
-#tickerSelect {
+ }
+ 
+ 
+ #tickerSelect {
     padding: 6px;
     font-size: 14px;
-}
-.tooltip {
+ }
+ .tooltip {
     position: absolute;
     pointer-events: none;
     background: white;
@@ -140,3 +196,4 @@ body {
     opacity: 0;
     transition: opacity 0.2s ease;
   }
+ 

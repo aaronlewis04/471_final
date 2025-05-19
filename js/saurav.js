@@ -419,9 +419,9 @@ const pies_Height = 300 - pies_Margin.top - pies_Margin.bottom;
 const pieRadius = 100;
 
 const pies_SvgContainer = d3.select('#vis2')
-  .append('s_svg')
-  .attr('s_width', pies_Width + pies_Margin.left + pies_Margin.right)
-  .attr('s_height', pies_Height + pies_Margin.top + pies_Margin.bottom + 100);
+  .append('svg')
+  .attr('width', pies_Width + pies_Margin.left + pies_Margin.right)
+  .attr('height', pies_Height + pies_Margin.top + pies_Margin.bottom + 100);
 
 // Add slider label
 pies_SvgContainer.append('text')
@@ -541,8 +541,8 @@ legend.selectAll('rect')
   .append('rect')
   .attr('x', 0)
   .attr('y', (d, i) => i * 25)
-  .attr('s_width', 20)
-  .attr('s_height', 20)
+  .attr('width', 20)
+  .attr('height', 20)
   .attr('fill', d => pieColor(d));
 
 legend.selectAll('text')

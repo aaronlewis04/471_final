@@ -170,6 +170,7 @@ function createContributionVis() {
         .rangeRound([height, 100])
 
 
+    //put in axis
     Csvg.append("g")
         .attr("transform", `translate(0,${height - margin.bottom})`)
         .call(d3.axisBottom(x))
@@ -184,6 +185,7 @@ function createContributionVis() {
             .attr("text-anchor", "end")
             .text("Contributions")
 
+    //axis labels and title 
     Csvg.append("text")
         .attr("x", width / 2) 
         .attr("y", height - 20) 
@@ -206,7 +208,7 @@ function createContributionVis() {
         .style("font-family", "sans-serif")
 
     Csvg.append("text")
-        .text("Political Donations in the US")
+        .text("Political Donations in the US By Billionaire Donors Each Election Cycle 1990 - 2020")
         .attr("x", 520)  
         .attr("y", 50)   
         .attr("text-anchor", "middle") 
@@ -256,7 +258,10 @@ function createContributionVis() {
         .attr("text-anchor", "end") 
         .style("fill", "blue") 
         .style("cursor", "pointer")
+
 }
+
+//visualization for tech/other billionaire wealth breakdown 
 function createBillVis() {
     data = allData
     series = createSeries(data)
@@ -396,7 +401,7 @@ function createBillVis() {
     svg.append("text").attr("x", 120).attr("y", 25).text("Tech").style("font-size", "15px").attr("alignment-baseline","middle")
     svg.append("text").attr("x", 120).attr("y", 45).text("Others").style("font-size", "15px").attr("alignment-baseline","middle")
     
-
+    //title
     svg.append("text")
         .text("Share of Billionaire Net Worth by 'Technology' vs 'Other' Billionaires")
         .attr("x", 520)  
@@ -569,7 +574,7 @@ function createBillVis() {
                 .style("stroke", "none")
         }
 
-        //remove old detailed, useful when users click another bar when in zoomed in view
+        //remove old detailed bars, useful when users click another bar when in zoomed in view
         d3.selectAll(".bar-segment")
             .remove()
 
@@ -604,7 +609,7 @@ function createBillVis() {
         g.attr("stroke-width", 1 / transform.k);
     }
 
-    //override other zoom functionalities that we don't need 
+    //override other zoom functionalities so it doesn't interfere 
     svg.call(zoom)
         .on("wheel.zoom", null)
         .on("mousedown.zoom", null)
@@ -615,13 +620,15 @@ function createBillVis() {
     svg.on("click", reset)
 }
 
+//cleans data and starts visualizations 
 function BillInit(){
     createContributionVis()
+
     d3.csv(Billpath, convertTypes)
     .then(data => {
             const grouped = {};
 
-            //aggregate net_worth and billionair count by year and industry 
+            //aggregate net_worth and billionaire count by year and industry 
             for (const { name, year, industry, net_worth, country} of data) {
 
                 if (country === "United States" && year >= 2006) {

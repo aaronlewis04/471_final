@@ -1,18 +1,18 @@
-// Set margin
-const margin = { top: 100, right: 60, bottom: 60, left: 100 };
-const width = 1000 - margin.left - margin.right;
-const height = 600 - margin.top - margin.bottom;
+// Set s_margin
+const s_margin = { top: 100, right: 60, bottom: 60, left: 100 };
+const s_width = 1000 - s_margin.left - s_margin.right;
+const s_height = 600 - s_margin.top - s_margin.bottom;
 
-// Create SVG
-const svg = d3.select('#vis')
+// Create s_SVG
+const s_svg = d3.select('#vis')
   .append('svg')
-  .attr('width', width + margin.left + margin.right)
-  .attr('height', height + margin.top + margin.bottom)
+  .attr('width', s_width + s_margin.left + s_margin.right)
+  .attr('height', s_height + s_margin.top + s_margin.bottom)
   .append('g')
-  .attr('transform', `translate(${margin.left},${margin.top})`);
+  .attr('transform', `translate(${s_margin.left},${s_margin.top})`);
 
-// Tooltip
-const tooltip = d3.select("body")
+// s_Tooltip
+const s_tooltip = d3.select("body")
   .append("div")
   .attr("class", "tooltip")
   .style("position", "absolute")
@@ -29,28 +29,28 @@ const tooltip = d3.select("body")
 });
 
 // Scales and Axes
-const x = d3.scaleLinear().domain([2010, 2025]).range([0, width]);
-let y = d3.scaleLinear();
+const s_x = d3.scaleLinear().domain([2010, 2025]).range([0, s_width]);
+let s_y = d3.scaleLinear();
 
-const chartTitle = svg.append("text")
-  .attr("x", width / 2)
+const s_chartTitle = s_svg.append("text")
+  .attr("x", s_width / 2)
   .attr("y", -30)
   .attr("text-anchor", "middle")
   .attr("class", "chart-title")
   .text("Market Cap (2010–2025) for $AAPL");
 
-svg.append("text")
+s_svg.append("text")
   .attr("class", "x label")
   .attr("text-anchor", "middle")
-  .attr("x", width / 2)
-  .attr("y", height + 40)
+  .attr("x", s_width / 2)
+  .attr("y", s_height + 40)
   .text("Years");
 
-const yLabel = svg.append("text")
+const s_yLabel = s_svg.append("text")
   .attr("class", "y label")
   .attr("text-anchor", "middle")
   .attr("transform", "rotate(-90)")
-  .attr("x", -height / 2)
+  .attr("x", -s_height / 2)
   .attr("y", -50)
   .text("Market Cap (Billions of Dollars)");
 
@@ -89,22 +89,22 @@ function defaultStart() {
       };
     });
 
-    svg.selectAll(".axis, .grid, path, .y-zero-label, .zero-line, .dot, .area").remove();
+    s_svg.selectAll(".axis, .grid, path, .y-zero-label, .zero-line, .dot, .area").remove();
 
     const titleMetric = selectedMetric === "Market Cap" ? "Market Cap" : "Percent Change (%)";
-    chartTitle.text(`${titleMetric} (2010–2025): Tech vs Other`);
-    yLabel.text(titleMetric);
+    s_chartTitle.text(`${titleMetric} (2010–2025): Tech vs Other`);
+    s_yLabel.text(titleMetric);
 
     y = selectedMetric === "Market Cap"
-      ? d3.scaleLinear().domain([0, d3.max(combinedData, d => Math.max(d.techMC, d.otherMC))]).range([height, 0])
-      : d3.scaleLinear().domain([-100, 100]).range([height, 0]);
+      ? d3.scaleLinear().domain([0, d3.max(combinedData, d => Math.max(d.techMC, d.otherMC))]).range([s_height, 0])
+      : d3.scaleLinear().domain([-100, 100]).range([s_height, 0]);
 
-    svg.append("g")
-      .attr("transform", `translate(0,${height})`)
+    s_svg.append("g")
+      .attr("transform", `translate(0,${s_height})`)
       .attr("class", "axis")
-      .call(d3.axisBottom(x).tickFormat(d3.format("d")).tickValues(d3.range(2010, 2026)));
+      .call(d3.axisBottom(s_x).tickFormat(d3.format("d")).tickValues(d3.range(2010, 2026)));
 
-    const yAxisGroup = svg.append("g").attr("class", "axis")
+    const yAxisGroup = s_svg.append("g").attr("class", "axis")
       .call(d3.axisLeft(y).ticks(selectedMetric === "Market Cap" ? 6 : 6));
 
 
@@ -116,7 +116,7 @@ function defaultStart() {
       // Bold 0% tick line
       yAxisGroup.selectAll(".tick line")
         .attr("stroke", d => d === 0 ? "black" : null)
-        .attr("stroke-width", d => d === 0 ? 2 : 1);
+        .attr("stroke-s_width", d => d === 0 ? 2 : 1);
 
       // Add bold 0% label on axis
       yAxisGroup.append("text")
@@ -128,27 +128,27 @@ function defaultStart() {
         .text("0%");
 
       // Add bold horizontal line at 0%
-      svg.append("line")
+      s_svg.append("line")
         .attr("class", "zero-line")
         .attr("x1", 0)
-        .attr("x2", width)
+        .attr("x2", s_width)
         .attr("y1", y(0))
         .attr("y2", y(0))
         .attr("stroke", "black")
-        .attr("stroke-width", 2);
+        .attr("stroke-s_width", 2);
     }
 
 
-    svg.append("g")
+    s_svg.append("g")
       .attr("class", "grid")
-      .call(d3.axisLeft(y).tickSize(-width).tickFormat("").ticks(6));
+      .call(d3.axisLeft(y).tickSize(-s_width).tickFormat("").ticks(6));
 
     const techLine = d3.line()
-      .x(d => x(d.year))
+      .x(d => s_x(d.year))
       .y(d => y(selectedMetric === "Market Cap" ? d.techMC : d.techChange));
 
     const otherLine = d3.line()
-      .x(d => x(d.year))
+      .x(d => s_x(d.year))
       .y(d => y(selectedMetric === "Market Cap" ? d.otherMC : d.otherChange));
 
     if (selectedMetric === "Market Cap") {
@@ -161,7 +161,7 @@ function defaultStart() {
         const isTechHigher = curr.techMC > curr.otherMC;
 
         const areaTechAbove = d3.area()
-          .x(d => x(d.year))
+          .x(d => s_x(d.year))
           .y0(d => y(d.otherMC))
           .y1(d => y(d.techMC));
 
@@ -170,7 +170,7 @@ function defaultStart() {
           .y0(d => y(d.techMC))
           .y1(d => y(d.otherMC));
 
-        svg.append("path")
+        s_svg.append("path")
           .datum(segData)
           .attr("fill", isTechHigher ? "lightgreen" : "#d6eaf8")
           .attr("opacity", 0.4)
@@ -178,11 +178,11 @@ function defaultStart() {
       }
 
       const otherArea = d3.area()
-        .x(d => x(d.year))
-        .y0(height)
+        .x(d => s_x(d.year))
+        .y0(s_height)
         .y1(d => y(d.otherMC));
 
-      svg.append("path")
+      s_svg.append("path")
         .datum(combinedData)
         .attr("fill", "#d6eaf8")
         .attr("opacity", 0.3)
@@ -194,66 +194,66 @@ function defaultStart() {
     // Optional: blue area under Other line for Market Cap
     if (selectedMetric === "Market Cap") {
       const otherArea = d3.area()
-        .x(d => x(d.year))
-        .y0(height)
+        .x(d => s_x(d.year))
+        .y0(s_height)
         .y1(d => y(d.otherMC));
-      svg.append("path")
+      s_svg.append("path")
         .datum(combinedData)
         .attr("fill", "#d6eaf8")
         .attr("opacity", 0.3)
         .attr("d", otherArea);
     }
 
-    const techPath = svg.append("path")
+    const techPath = s_svg.append("path")
       .datum(combinedData)
       .attr("fill", "none")
       .attr("stroke", "darkgreen")
-      .attr("stroke-width", 3)
+      .attr("stroke-s_width", 3)
       .attr("d", techLine);
 
-    const otherPath = svg.append("path")
+    const otherPath = s_svg.append("path")
       .datum(combinedData)
       .attr("fill", "none")
       .attr("stroke", "#5dade2")
-      .attr("stroke-width", 3)
+      .attr("stroke-s_width", 3)
       .attr("d", otherLine);
 
-    // Tooltip dots
-    svg.selectAll(".dot-tech")
+    // s_Tooltip dots
+    s_svg.selectAll(".dot-tech")
       .data(combinedData)
       .enter().append("circle")
       .attr("class", "dot dot-tech")
-      .attr("cx", d => x(d.year))
+      .attr("cx", d => s_x(d.year))
       .attr("cy", d => y(selectedMetric === "Market Cap" ? d.techMC : d.techChange))
       .attr("r", 4)
       .attr("fill", "darkgreen")
       .on("mouseover", (event, d) => {
         const value = selectedMetric === "Market Cap" ? `${d.techMC.toLocaleString()} B` : `${d.techChange.toFixed(1)}%`;
-        tooltip.html(`Year: ${d.year}<br>Tech: ${value}`)
+        s_tooltip.html(`Year: ${d.year}<br>Tech: ${value}`)
           .style("left", (event.pageX + 10) + "px")
           .style("top", (event.pageY - 28) + "px")
           .transition().duration(200).style("opacity", 0.9);
       })
-      .on("mousemove", event => tooltip.style("left", (event.pageX + 10) + "px").style("top", (event.pageY - 28) + "px"))
-      .on("mouseout", () => tooltip.transition().duration(200).style("opacity", 0));
+      .on("mousemove", event => s_tooltip.style("left", (event.pageX + 10) + "px").style("top", (event.pageY - 28) + "px"))
+      .on("mouseout", () => s_tooltip.transition().duration(200).style("opacity", 0));
 
-    svg.selectAll(".dot-other")
+    s_svg.selectAll(".dot-other")
       .data(combinedData)
       .enter().append("circle")
       .attr("class", "dot dot-other")
-      .attr("cx", d => x(d.year))
+      .attr("cx", d => s_x(d.year))
       .attr("cy", d => y(selectedMetric === "Market Cap" ? d.otherMC : d.otherChange))
       .attr("r", 4)
       .attr("fill", "#5dade2")
       .on("mouseover", (event, d) => {
         const value = selectedMetric === "Market Cap" ? `${d.otherMC.toLocaleString()} B` : `${d.otherChange.toFixed(1)}%`;
-        tooltip.html(`Year: ${d.year}<br>Other: ${value}`)
+        s_tooltip.html(`Year: ${d.year}<br>Other: ${value}`)
           .style("left", (event.pageX + 10) + "px")
           .style("top", (event.pageY - 28) + "px")
           .transition().duration(200).style("opacity", 0.9);
       })
-      .on("mousemove", event => tooltip.style("left", (event.pageX + 10) + "px").style("top", (event.pageY - 28) + "px"))
-      .on("mouseout", () => tooltip.transition().duration(200).style("opacity", 0));
+      .on("mousemove", event => s_tooltip.style("left", (event.pageX + 10) + "px").style("top", (event.pageY - 28) + "px"))
+      .on("mouseout", () => s_tooltip.transition().duration(200).style("opacity", 0));
   });
 }
 
@@ -292,8 +292,8 @@ function update() {
     else if (selectedTicker === "Other Industries") titleTicker = "Other Industries";
     const prefix = (selectedTicker === "Tech Industry" || selectedTicker === "Other Industries") ? "" : "$";
     const titleMetric = selectedMetric === "Market Cap" ? "Market Cap" : "Percent Change";
-    chartTitle.text(`${titleMetric} (2010–2025) for ${prefix}${titleTicker}`);
-    yLabel.text(selectedMetric === "Market Cap" ? "Market Cap (Billions of Dollars)" : "Percent Change (%)");
+    s_chartTitle.text(`${titleMetric} (2010–2025) for ${prefix}${titleTicker}`);
+    s_yLabel.text(selectedMetric === "Market Cap" ? "Market Cap (Billions of Dollars)" : "Percent Change (%)");
 
     const parsedData = data.map(d => ({
       year: +d.Year,
@@ -301,18 +301,18 @@ function update() {
       change: +d.change
     })).sort((a, b) => a.year - b.year);
 
-    svg.selectAll(".axis, .grid, path, .y-zero-label, .zero-line, .dot, .area").remove();
+    s_svg.selectAll(".axis, .grid, path, .y-zero-label, .zero-line, .dot, .area").remove();
 
     y = selectedMetric === "Market Cap"
-      ? d3.scaleLinear().domain([0, 4000]).range([height, 0])
-      : d3.scaleLinear().domain([-250, 250]).range([height, 0]);
+      ? d3.scaleLinear().domain([0, 4000]).range([s_height, 0])
+      : d3.scaleLinear().domain([-250, 250]).range([s_height, 0]);
 
-    svg.append("g")
-      .attr("transform", `translate(0,${height})`)
+    s_svg.append("g")
+      .attr("transform", `translate(0,${s_height})`)
       .attr("class", "axis")
-      .call(d3.axisBottom(x).tickFormat(d3.format("d")).tickValues(d3.range(2010, 2026)));
+      .call(d3.axisBottom(s_x).tickFormat(d3.format("d")).tickValues(d3.range(2010, 2026)));
 
-    const yAxisGroup = svg.append("g")
+    const yAxisGroup = s_svg.append("g")
       .attr("class", "axis")
       .call(d3.axisLeft(y).ticks(selectedMetric === "Market Cap" ? 9 : 6));
 
@@ -322,7 +322,7 @@ function update() {
 
       yAxisGroup.selectAll(".tick line")
         .attr("stroke", d => d === 0 ? "black" : null)
-        .attr("stroke-width", d => d === 0 ? 2 : 1);
+        .attr("stroke-s_width", d => d === 0 ? 2 : 1);
 
       yAxisGroup.append("text")
         .attr("class", "y-zero-label")
@@ -332,36 +332,36 @@ function update() {
         .attr("font-weight", "bold")
         .text("0%");
 
-      svg.append("line")
+      s_svg.append("line")
         .attr("class", "zero-line")
         .attr("x1", 0)
-        .attr("x2", width)
+        .attr("x2", s_width)
         .attr("y1", y(0))
         .attr("y2", y(0))
         .attr("stroke", "black")
-        .attr("stroke-width", 2);
+        .attr("stroke-s_width", 2);
     }
 
-    svg.append("g")
+    s_svg.append("g")
       .attr("class", "grid")
-      .call(d3.axisLeft(y).tickSize(-width).tickFormat("").ticks(6));
+      .call(d3.axisLeft(y).tickSize(-s_width).tickFormat("").ticks(6));
 
     const line = d3.line()
       .defined(d => selectedMetric === "Market Cap" || d.change != null)
-      .x(d => x(d.year))
+      .x(d => s_x(d.year))
       .y(d => y(selectedMetric === "Market Cap" ? d.marketCap : d.change));
 
     const area = d3.area()
       .defined(d => selectedMetric === "Market Cap" || d.change != null)
-      .x(d => x(d.year))
-      .y0(selectedMetric === "Market Cap" ? height : y(0))
+      .x(d => s_x(d.year))
+      .y0(selectedMetric === "Market Cap" ? s_height : y(0))
       .y1(d => y(selectedMetric === "Market Cap" ? d.marketCap : d.change));
 
-    const path = svg.append("path")
+    const path = s_svg.append("path")
       .datum(parsedData)
       .attr("fill", "none")
       .attr("stroke", lineColor)
-      .attr("stroke-width", 3)
+      .attr("stroke-s_width", 3)
       .attr("d", line);
 
     const totalLength = path.node().getTotalLength();
@@ -373,18 +373,18 @@ function update() {
       .ease(d3.easeLinear)
       .attr("stroke-dashoffset", 0);
 
-    svg.append("path")
+    s_svg.append("path")
       .datum(parsedData)
       .attr("class", "area")
       .attr("fill", areaColor)
       .attr("opacity", 0.4)
       .attr("d", area);
 
-    svg.selectAll(".dot")
+    s_svg.selectAll(".dot")
       .data(parsedData)
       .enter().append("circle")
       .attr("class", "dot")
-      .attr("cx", d => x(d.year))
+      .attr("cx", d => s_x(d.year))
       .attr("cy", d => y(selectedMetric === "Market Cap" ? d.marketCap : d.change))
       .attr("r", 4)
       .attr("fill", lineColor)
@@ -392,17 +392,17 @@ function update() {
         const value = selectedMetric === "Market Cap"
           ? d.marketCap.toLocaleString() + " B"
           : d.change + "%";
-        tooltip.html(`Year: ${d.year}<br>${titleMetric}: ${value}`)
+        s_tooltip.html(`Year: ${d.year}<br>${titleMetric}: ${value}`)
           .style("left", (event.pageX + 10) + "px")
           .style("top", (event.pageY - 28) + "px")
           .transition().duration(200).style("opacity", 0.9);
       })
       .on("mousemove", event => {
-        tooltip.style("left", (event.pageX + 10) + "px")
+        s_tooltip.style("left", (event.pageX + 10) + "px")
           .style("top", (event.pageY - 28) + "px");
       })
       .on("mouseout", () => {
-        tooltip.transition().duration(200).style("opacity", 0);
+        s_tooltip.transition().duration(200).style("opacity", 0);
       });
   });
 }
@@ -413,19 +413,19 @@ init();
 
 // Pie chart visualization
 
-const pieMargin = { top: 80, right: 100, bottom: 80, left: 100 };
-const pieWidth = 1000 - pieMargin.left - pieMargin.right;
-const pieHeight = 300 - pieMargin.top - pieMargin.bottom;
+const pies_Margin = { top: 80, right: 100, bottom: 80, left: 100 };
+const pies_Width = 1000 - pies_Margin.left - pies_Margin.right;
+const pies_Height = 300 - pies_Margin.top - pies_Margin.bottom;
 const pieRadius = 100;
 
-const pieSvgContainer = d3.select('#vis2')
-  .append('svg')
-  .attr('width', pieWidth + pieMargin.left + pieMargin.right)
-  .attr('height', pieHeight + pieMargin.top + pieMargin.bottom + 100);
+const pies_SvgContainer = d3.select('#vis2')
+  .append('s_svg')
+  .attr('s_width', pies_Width + pies_Margin.left + pies_Margin.right)
+  .attr('s_height', pies_Height + pies_Margin.top + pies_Margin.bottom + 100);
 
 // Add slider label
-pieSvgContainer.append('text')
-  .attr('x', pieMargin.left + pieWidth / 2)
+pies_SvgContainer.append('text')
+  .attr('x', pies_Margin.left + pies_Width / 2)
   .attr('y', 30)
   .attr('text-anchor', 'middle')
   .style('font-size', '16px')
@@ -433,28 +433,28 @@ pieSvgContainer.append('text')
 
 // Add slider group
 let targetYear = 2010;
-let sliderWidth = Math.min(pieWidth, 600);
+let sliders_Width = Math.min(pies_Width, 600);
 let yearSlider = d3.sliderHorizontal()
   .min(2010)
   .max(2025)
   .step(1)
   .tickFormat(d3.format("d"))
   .value(targetYear)
-  .width(sliderWidth - 100)
+  .width(sliders_Width - 100)
   .displayValue(false)
   .on('onchange', val => {
     targetYear = +val;
     drawPieChart(targetYear);
   });
 
-pieSvgContainer.append('g')
-  .attr('transform', `translate(${pieMargin.left + (pieWidth - sliderWidth + 100) / 2}, 50)`)
+pies_SvgContainer.append('g')
+  .attr('transform', `translate(${pies_Margin.left + (pies_Width - sliders_Width + 100) / 2}, 50)`)
   .call(yearSlider);
 
 // Pie chart group
-const pieSvg = pieSvgContainer
+const pies_Svg = pies_SvgContainer
   .append('g')
-  .attr('transform', `translate(${pieMargin.left + pieWidth / 2}, ${pieMargin.top + pieHeight / 2 + 50})`);
+  .attr('transform', `translate(${pies_Margin.left + pies_Width / 2}, ${pies_Margin.top + pies_Height / 2 + 50})`);
 
 const pieColor = d3.scaleOrdinal()
   .domain(['Tech', 'Other'])
@@ -485,13 +485,13 @@ function drawPieChart(year) {
 
     const pieArcs = pie(pieData);
 
-    const paths = pieSvg.selectAll('path').data(pieArcs);
+    const paths = pies_Svg.selectAll('path').data(pieArcs);
 
     paths.enter()
       .append('path')
       .attr('fill', d => pieColor(d.data.label))
       .attr('stroke', 'white')
-      .attr('stroke-width', 2)
+      .attr('stroke-s_width', 2)
       .each(function (d) { this._current = d; })
       .merge(paths)
       .transition().duration(500)
@@ -506,12 +506,12 @@ function drawPieChart(year) {
     paths.exit().remove();
 
     // Remove any previous percentage labels
-    pieSvg.selectAll('.pie-center-label').remove();
+    pies_Svg.selectAll('.pie-center-label').remove();
 
     const percentTech = ((techMC / total) * 100).toFixed(2) + '%';
     const percentOther = ((otherMC / total) * 100).toFixed(2) + '%';
 
-    pieSvg.append('text')
+    pies_Svg.append('text')
       .attr('class', 'pie-center-label')
       .attr('text-anchor', 'middle')
       .attr('y', -8)
@@ -520,7 +520,7 @@ function drawPieChart(year) {
       .text(`Tech: ${percentTech}`)
       .style('font-weight', 'bold');
 
-    pieSvg.append('text')
+    pies_Svg.append('text')
       .attr('class', 'pie-center-label')
       .attr('text-anchor', 'middle')
       .attr('y', 12)
@@ -531,9 +531,9 @@ function drawPieChart(year) {
   });
 }
 
-// Add Legend inside pieSvgContainer (bottom right)
-const legend = pieSvgContainer.append('g')
-  .attr('transform', `translate(${pieMargin.left + pieWidth - 150}, ${pieMargin.top + pieHeight + 40})`);
+// Add Legend inside pies_SvgContainer (bottom right)
+const legend = pies_SvgContainer.append('g')
+  .attr('transform', `translate(${pies_Margin.left + pies_Width - 150}, ${pies_Margin.top + pies_Height + 40})`);
 
 legend.selectAll('rect')
   .data(['Tech', 'Other'])
@@ -541,8 +541,8 @@ legend.selectAll('rect')
   .append('rect')
   .attr('x', 0)
   .attr('y', (d, i) => i * 25)
-  .attr('width', 20)
-  .attr('height', 20)
+  .attr('s_width', 20)
+  .attr('s_height', 20)
   .attr('fill', d => pieColor(d));
 
 legend.selectAll('text')

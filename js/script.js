@@ -188,12 +188,32 @@ function createContributionVis() {
         .attr("x", width / 2) 
         .attr("y", height - 20) 
         .text("Year")
+        .attr("text-anchor", "middle") 
+        .style("fill", "black")
+        .style("font-size", "16px")
+        .style("font-weight", "bold")
+        .style("font-family", "sans-serif")
 
     Csvg.append("text")
         .attr("transform", "rotate(-90)") 
         .attr("y", 0 + 30)
         .attr("x", 0 - (height / 2)) 
-        .text("Contributions (in Millions USD");
+        .text("Contributions (in Millions USD")
+        .attr("text-anchor", "middle") 
+        .style("fill", "black")
+        .style("font-size", "16px")
+        .style("font-weight", "bold")
+        .style("font-family", "sans-serif")
+
+    Csvg.append("text")
+        .text("Political Donations in the US")
+        .attr("x", 520)  
+        .attr("y", 50)   
+        .attr("text-anchor", "middle") 
+        .style("fill", "black")
+        .style("font-size", "16px")
+        .style("font-weight", "bold")
+        .style("font-family", "sans-serif")
 
 
     //create bar chart
@@ -378,14 +398,14 @@ function createBillVis() {
     
 
     svg.append("text")
-    .text("Share of Billionaire Net Worth by 'Technology' vs 'Other' Billionaires")
-    .attr("x", 520)  // X position
-    .attr("y", 50)   // Y position
-    .attr("text-anchor", "middle") // or "middle", "end"
-    .style("fill", "black")
-    .style("font-size", "16px")
-    .style("font-weight", "bold")
-    .style("font-family", "sans-serif");
+        .text("Share of Billionaire Net Worth by 'Technology' vs 'Other' Billionaires")
+        .attr("x", 520)  
+        .attr("y", 50)   
+        .attr("text-anchor", "middle") 
+        .style("fill", "black")
+        .style("font-size", "16px")
+        .style("font-weight", "bold")
+        .style("font-family", "sans-serif")
 
     //add clickable source
     link = svg.append("a")

@@ -9,6 +9,7 @@
     <script src="https://unpkg.com/d3-simple-slider"></script>
 </head>
 <body>
+        <!-- nav bar we use to navigate between the different pages, we used bootstrap -->
         <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top px-4">
         <div class="container-fluid">
           <a class="navbar-brand" href="index.html">Final Project</a>
@@ -30,7 +31,7 @@
       </nav>
     
     
-    <div class="container"> <!-- Centers content and sets max width -->
+    <div class="container"> <!-- container for all of the content  -->
         <h1>Tech Billionaires: A New Robber Baron?</h1>
         <h6> Created by Justin Zhai, Ezra Cohen, Mia Cohen, Saurav Patel, Aaron Lewis </h6>
         <br>
@@ -42,6 +43,8 @@
           We began by looking at the industry metrics and came discover that that there is a cause for calling the tech industry by that nickname. 
           The data hasn't lied: this industry and the giants within it have grown at a fast pace. Exceeding the growth of non-tech large corporations.
         </p>
+
+        <!-- div for first two visualizations made by saurav -->
         <div id="SauravViz">
             <div class="container">
                 <h4><b>Visualizing and Comparing Market Caps of Major, Publicly Traded Tech vs Non -Tech US-Based Companies (src: Yahoo Finance)</b></h4>
@@ -60,28 +63,6 @@
                     The tech companies are Apple Inc (AAPL), Amazon.com Inc (AMZN), NVIDIA Corp. (NVDA), Alphabet Inc (GOOG), and Microsoft Corp. (MSFT). The non-tech "other" companies are Berkshire Hathaway Inc (BRK), JPMorgan Chase & Co. (JPM), Eli Lilly and Co. (LLY), Visa Inc. (V), and Walmart Inc. (WMT).
                 </p>
                 
-                <!-- <div style="display: flex; justify-content: space-between; margin-top: 20px; gap: 40px;">
-                    
-                    <div style="flex: 1;">
-                    <h5><b>Tech Companies</b></h5>
-                    <p><strong>AAPL (Apple Inc.):</strong> Apple designs and sells consumer electronics like the iPhone, Mac, and iPad, as well as software and digital services such as the App Store and iCloud.</p>
-                    <p><strong>AMZN (Amazon.com Inc.):</strong> Amazon is a global e-commerce and cloud computing giant, known for its online retail marketplace and AWS (Amazon Web Services) platform.</p>
-                    <p><strong>NVDA (NVIDIA Corp.):</strong> NVIDIA designs GPUs used in gaming, data centers, AI, and autonomous vehicles, and is a leader in AI hardware and software platforms.</p>
-                    <p><strong>GOOG (Alphabet Inc.):</strong> Alphabet is the parent company of Google, offering products in search, advertising, cloud computing, software, and hardware, including YouTube and Android.</p>
-                    <p><strong>MSFT (Microsoft Corp.):</strong> Microsoft develops software (like Windows and Office), cloud services (Azure), and hardware products, and owns LinkedIn and Xbox.</p>
-                    </div>
-                
-                    
-                    <div style="flex: 1;">
-                    <h5><b>Other Companies</b></h5>
-                    <p><strong>BRK (Berkshire Hathaway Inc.):</strong> Led by Warren Buffett, Berkshire Hathaway is a diversified holding company with businesses in insurance, railroads, utilities, and equity investments in major firms.</p>
-                    <p><strong>JPM (JPMorgan Chase & Co.):</strong> JPMorgan Chase is one of the largest global financial services firms, providing banking, investment, and asset management services.</p>
-                    <p><strong>LLY (Eli Lilly and Co.):</strong> Eli Lilly is a major pharmaceutical company focused on developing medicines for diabetes, cancer, mental health, and autoimmune diseases.</p>
-                    <p><strong>V (Visa Inc.):</strong> Visa is one of the two major payment card companies (alongside Mastercard). VISA stands for Visa International Service Association.</p>
-                    <p><strong>WMT (Walmart Inc.):</strong> Walmart is the world’s largest retailer, operating a global chain of discount department stores and grocery supercenters.</p>
-                    </div>
-                </div> -->
-                
                 <p style="margin-top: 30px;">
                     The line graph below visualizes the change in market cap over the period of 15 years from 2010 
                     to 2025 for each of these companies. There is also an option to view these
@@ -94,13 +75,14 @@
                 <div style="display: flex; justify-content: center;">
                     <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                       <div>
+                        <!-- alllows you to select  whether you want market cap or percent change -->
                         <label for="metricSelect"><strong>Metric:</strong></label><br>
                         <select id="metricSelect">
                           <option>Market Cap</option>
                           <option>Percent Change (%)</option>
                         </select>
                       </div>
-                  
+                      <!-- alllows you to select company -->
                       <div>
                         <label for="tickerSelect"><strong>Ticker:</strong></label><br>
                         <select id="tickerSelect">
@@ -122,9 +104,9 @@
                     </div>
                   </div>
         
-                <!-- Main chart -->
+                <!-- Main saurav chart chart -->
                 <div style="text-align: center;">
-                    <div id="vis"></div>
+                    <div id="vis"></div>  <!-- vis that it links to  -->
                 </div>
 
                 <h4 style="display: flex; justify-content: center; margin-top: 30px;"><b>Relative Distribution of Top 5 Tech and Non-Tech Market Cap US Companies</b></h4>
@@ -144,7 +126,7 @@
             </div>
         </div>
             
-        
+        <!-- used observable for this chart so just importing iframe -->
         <h4><b>Top 20 Largest Market-Cap Companies in US Ranked by Chosen Metric</b></h4>
         <p>The graphic builds upon the previous and allows users to examine the top 20 US based companies by market cap size and examine other metrics such as the earnings in 2024 and earnings-to-employee ratio in 2024. As one can observe, the technology companies tend to have the highest market caps (8 companies above 1 trillion), the highest earnings, and high earnings-to-employee ratios. NVIDIA has a staggering $2.3M earnings per employee since they have a relatively low amount of employees. This demonstrates the concentration of wealth that these tech companies can acquire. We took inspiration from the vertical bar chart in observable plot gallery: <a target="_blank"  href="https://observablehq.com/@observablehq/plot-vertical-bars-rotated-labels">Link</a> <sup><a href="references.html#fn6" id="ref6">[6]</a></sup></p>
         <div style="display: flex; justify-content: center;">
@@ -163,7 +145,7 @@
           This demonstrates a growing dependance on and usage of web applications owned by "big tech" companies, meaning their products become 
           indispensable for daily needs.We took inspiration from the stacked area chart in observable plot gallery: <a target="_blank" href="https://observablehq.com/@observablehq/plot-stacked-area-chart">Link</a><sup><a href="references.html#fn7" id="ref7">[7]</a></sup>
         </p>
-
+        <!-- used observable for this chart so just importing iframe -->
         <div style="display: flex; justify-content: center;">
         <iframe width="900" height="500" frameborder="0"
             src="https://observablehq.com/embed/a6d356df77ef9e73@110?cells=chart"></iframe>
@@ -195,6 +177,7 @@
           and is not reflective of our current economy. The Gilded Age was a time period of great economic success by every major metric. The cost of living was decreasing, 
           real GDP was increasing, and the stock market was booming. We took inspiration from the lollipop chart in observable plot gallery: <a target="_blank" href="https://observablehq.com/@observablehq/plot-lollipop">Link</a>
         </p>
+        <!-- used observable for this chart so just importing iframe -->
         <div style="display: flex; justify-content: center;">
         <iframe width="50%" height="623.640625" frameborder="0"
             src="https://observablehq.com/embed/586a47c6dab880e9@216?cells=chart"></iframe>
@@ -209,6 +192,7 @@
           foundation for a vast gap in wealth.<sup><a href="references.html#fn16" id="ref16">[16]</a></sup>
         </p>
 
+        <!-- using flex box to get visualizations side by side -->
         <div class="d-flex justify-content-between flex-wrap mb-4">
             <iframe class="flex-fill me-2" style="height:580px; min-width: 48%;" frameborder="0"
               src="https://observablehq.com/embed/ca2e7a9eb3fc0b95@301?cells=chart_1"></iframe>
@@ -246,6 +230,8 @@
           in the recent decades (from the 1970s until this decade) and noticed that it was true: median weekly 
           wages (in "real wages" and therefore actual spending power) has been relatively steady, even rising.
         </p>
+
+        <!-- observable chart so just importing iframe -->
         <div style="display: flex; justify-content: center;">
         <iframe width="800" height="500" frameborder="0"
         src="https://observablehq.com/embed/cebd2b20be3eb1b2@106?cells=chart"></iframe>
@@ -287,8 +273,8 @@
                   <br><br>
                   To further explore the composition of billionaire wealth, you can click on the individual bars to see a detailed breakdown of which billionaires are contributing most to total billionaire wealth. 
                 </p> 
-              
-            
+
+                <!-- allows you to select type of chart -->
                 <div id="outer-controls">
                     <div id="controls">
                         Type: <select id="format" class="form-select"></select>
@@ -309,13 +295,14 @@
                             billionaires in the US in 2023 and the cities that they live in. 
                             We used length visual encoding in the form of a spike to show a clear indication to the reader which cities have the greatest number of billionaires. Major tech hubs such as New York City, NY and San Francisco, CA have a high concentration of billionaires. There also tend to be many counties where the wealthiest billionaire is from Technology in the San Francisco and Hawaii areas. Many of the tallest spikes have their wealthiest  billionaire be from technology such as New York City having Michael Bloomberg, San Francisco having Brian Chesky, and Seattle having Jeff Bezos. We took inspiration from the Spike Map chart in observable plot D3 gallery: <a target="_blank"  href="https://observablehq.com/@observablehq/plot-spike">Link</a>.
                           </p>
-                
+            <!-- used observable for this chart so just importing iframe -->  
             <div style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
                 <iframe width="1300" height="950" frameborder="0"
                 src="https://observablehq.com/embed/f9fd1b71d6e77ee7@507?cells=chart"></iframe>
     
             </div>
 
+            <!-- final visualization for the amount of donations -->
             <div id="Contributions-Container">
               <h4><b>Billionaires Election Contribution Over Time in the US</b></h4>
               <p>

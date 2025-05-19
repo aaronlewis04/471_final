@@ -5,5 +5,5 @@ When all of us met, one thing we agreed on is the increasing awareness of the we
 **Saurav and Aaron:** responsible for collecting data about current tech companies and comparing them to other sectors that make up the US GDP. Data collection included finding market caps, calculating percent change for individual companies and sectors, and other metrics that describe a company's financial profile and success. Visualizations based on the data collected were created in D3 and Observable.
 **Justin and Erza:**
 **Mia:**
-# Integration Using Github and Github Pages
-# Overall Conclusion:
+## Integration Using Github and Github Pages
+## Overall Conclusion:

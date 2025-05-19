@@ -39,6 +39,7 @@ const s_chartTitle = s_svg.append("text")
   .attr("class", "chart-title")
   .text("Market Cap (2010–2025) for $AAPL");
 
+// X axis text
 s_svg.append("text")
   .attr("class", "x label")
   .attr("text-anchor", "middle")
@@ -46,6 +47,7 @@ s_svg.append("text")
   .attr("y", s_height + 40)
   .text("Years");
 
+// Y axis labels
 const s_yLabel = s_svg.append("text")
   .attr("class", "y label")
   .attr("text-anchor", "middle")
@@ -54,32 +56,38 @@ const s_yLabel = s_svg.append("text")
   .attr("y", -50)
   .text("Market Cap (Billions of Dollars)");
 
+// Initialization function
 function init() {
   d3.select("#metricSelect").property("value", "Market Cap");
   d3.select("#tickerSelect").property("value", "Default");
   update();
 }
+
+// The default start function that shows the original default graph (comparison)
 function defaultStart() {
   const selectedMetric = d3.select("#metricSelect").property("value");
 
+  // Load data
   Promise.all([
     d3.csv("data/TECH.csv", d3.autoType),
     d3.csv("data/OTHER.csv", d3.autoType)
   ]).then(([techData, otherData]) => {
     techData.sort((a, b) => +a.Year - +b.Year);
     otherData.sort((a, b) => +a.Year - +b.Year);
-
+    // combined data for tech and other sector 
     const combinedData = techData.map((d, i) => {
       const year = +d.Year;
       const techMC = +d.MC;
       const otherMC = +otherData[i].MC;
 
+      // calculation for YoY change 
       const prevTechMC = i === 0 ? techMC : +techData[i - 1].MC;
       const prevOtherMC = i === 0 ? otherMC : +otherData[i - 1].MC;
 
       const techChange = i === 0 ? 0 : ((techMC - prevTechMC) / prevTechMC) * 100;
       const otherChange = i === 0 ? 0 : ((otherMC - prevOtherMC) / prevOtherMC) * 100;
 
+      // Return data for the graph 
       return {
         year,
         techMC,
@@ -91,10 +99,12 @@ function defaultStart() {
 
     s_svg.selectAll(".axis, .grid, path, .y-zero-label, .zero-line, .dot, .area").remove();
 
+    // What we have selected
     const titleMetric = selectedMetric === "Market Cap" ? "Market Cap" : "Percent Change (%)";
     s_chartTitle.text(`${titleMetric} (2010–2025): Tech vs Other`);
     s_yLabel.text(titleMetric);
 
+    // Market cap selection
     y = selectedMetric === "Market Cap"
       ? d3.scaleLinear().domain([0, d3.max(combinedData, d => Math.max(d.techMC, d.otherMC))]).range([s_height, 0])
       : d3.scaleLinear().domain([-100, 100]).range([s_height, 0]);
@@ -108,6 +118,7 @@ function defaultStart() {
       .call(d3.axisLeft(y).ticks(selectedMetric === "Market Cap" ? 6 : 6));
 
 
+    // Selection of percent change
     if (selectedMetric === "Percent Change") {
       // Bold 0% tick label
       yAxisGroup.selectAll(".tick text")
@@ -138,11 +149,12 @@ function defaultStart() {
         .attr("stroke-s_width", 2);
     }
 
-
+    // For the ticks on the graph 
     s_svg.append("g")
       .attr("class", "grid")
       .call(d3.axisLeft(y).tickSize(-s_width).tickFormat("").ticks(6));
 
+    // Line 
     const techLine = d3.line()
       .x(d => s_x(d.year))
       .y(d => y(selectedMetric === "Market Cap" ? d.techMC : d.techChange));
@@ -150,14 +162,14 @@ function defaultStart() {
     const otherLine = d3.line()
       .x(d => s_x(d.year))
       .y(d => y(selectedMetric === "Market Cap" ? d.otherMC : d.otherChange));
-
+    // Calculate area for the shaded region 
     if (selectedMetric === "Market Cap") {
       // Highlight area between lines (segmented)
       for (let i = 1; i < combinedData.length; i++) {
         const prev = combinedData[i - 1];
         const curr = combinedData[i];
         const segData = [prev, curr];
-
+        // Below code breaks down area below other, above tech and between the two curves
         const isTechHigher = curr.techMC > curr.otherMC;
 
         const areaTechAbove = d3.area()
@@ -169,7 +181,7 @@ function defaultStart() {
           .x(d => x(d.year))
           .y0(d => y(d.techMC))
           .y1(d => y(d.otherMC));
-
+        // Fill tech with green
         s_svg.append("path")
           .datum(segData)
           .attr("fill", isTechHigher ? "lightgreen" : "#d6eaf8")
@@ -181,7 +193,7 @@ function defaultStart() {
         .x(d => s_x(d.year))
         .y0(s_height)
         .y1(d => y(d.otherMC));
-
+      // Fill other with blue
       s_svg.append("path")
         .datum(combinedData)
         .attr("fill", "#d6eaf8")
@@ -191,7 +203,7 @@ function defaultStart() {
 
 
 
-    // Optional: blue area under Other line for Market Cap
+    // Same buf for market cap...
     if (selectedMetric === "Market Cap") {
       const otherArea = d3.area()
         .x(d => s_x(d.year))
@@ -204,13 +216,14 @@ function defaultStart() {
         .attr("d", otherArea);
     }
 
+    // Line for tech line
     const techPath = s_svg.append("path")
       .datum(combinedData)
       .attr("fill", "none")
       .attr("stroke", "darkgreen")
       .attr("stroke-s_width", 3)
       .attr("d", techLine);
-
+    // Line for other line
     const otherPath = s_svg.append("path")
       .datum(combinedData)
       .attr("fill", "none")
@@ -218,7 +231,7 @@ function defaultStart() {
       .attr("stroke-s_width", 3)
       .attr("d", otherLine);
 
-    // s_Tooltip dots
+    // s_Tooltip dots to hover over
     s_svg.selectAll(".dot-tech")
       .data(combinedData)
       .enter().append("circle")
@@ -234,9 +247,10 @@ function defaultStart() {
           .style("top", (event.pageY - 28) + "px")
           .transition().duration(200).style("opacity", 0.9);
       })
+      // Mouse events for the tooltip
       .on("mousemove", event => s_tooltip.style("left", (event.pageX + 10) + "px").style("top", (event.pageY - 28) + "px"))
       .on("mouseout", () => s_tooltip.transition().duration(200).style("opacity", 0));
-
+    
     s_svg.selectAll(".dot-other")
       .data(combinedData)
       .enter().append("circle")
@@ -257,19 +271,17 @@ function defaultStart() {
   });
 }
 
-
-
-
-
+// Method to update based on what the user wants
 function update() {
   const selectedMetric = d3.select("#metricSelect").property("value");
   const selectedTicker = d3.select("#tickerSelect").property("value");
-
+  // Default start if the selected ticker is default
   if (selectedTicker === "Default") {
     defaultStart();
     return;
   }
 
+  // Cases for tech and other without comparison
   let tickerFile;
   if (selectedTicker === "Tech Industry") {
     tickerFile = "TECH.csv";
@@ -286,6 +298,7 @@ function update() {
   const lineColor = isTechCompany ? "darkgreen" : "#5dade2";
   const areaColor = isTechCompany ? "lightgreen" : "#d6eaf8";
 
+  // For the other tickers, match it with the csv
   d3.csv(`data/${tickerFile}`).then(data => {
     let titleTicker = selectedTicker;
     if (selectedTicker === "Tech Industry") titleTicker = "Tech Industries";
@@ -294,7 +307,7 @@ function update() {
     const titleMetric = selectedMetric === "Market Cap" ? "Market Cap" : "Percent Change";
     s_chartTitle.text(`${titleMetric} (2010–2025) for ${prefix}${titleTicker}`);
     s_yLabel.text(selectedMetric === "Market Cap" ? "Market Cap (Billions of Dollars)" : "Percent Change (%)");
-
+    // Parsed data
     const parsedData = data.map(d => ({
       year: +d.Year,
       marketCap: +d.MC,
@@ -302,7 +315,7 @@ function update() {
     })).sort((a, b) => a.year - b.year);
 
     s_svg.selectAll(".axis, .grid, path, .y-zero-label, .zero-line, .dot, .area").remove();
-
+    // Metric selection 
     y = selectedMetric === "Market Cap"
       ? d3.scaleLinear().domain([0, 4000]).range([s_height, 0])
       : d3.scaleLinear().domain([-250, 250]).range([s_height, 0]);
@@ -315,15 +328,16 @@ function update() {
     const yAxisGroup = s_svg.append("g")
       .attr("class", "axis")
       .call(d3.axisLeft(y).ticks(selectedMetric === "Market Cap" ? 9 : 6));
-
+    
+      // Selected percent change
     if (selectedMetric === "Percent Change") {
       yAxisGroup.selectAll(".tick text")
         .style("font-weight", d => d === 0 ? "bold" : null);
-
+      // Line going across the x axis above y=0
       yAxisGroup.selectAll(".tick line")
         .attr("stroke", d => d === 0 ? "black" : null)
         .attr("stroke-s_width", d => d === 0 ? 2 : 1);
-
+      // Y axis text attributes
       yAxisGroup.append("text")
         .attr("class", "y-zero-label")
         .attr("x", -30)
@@ -331,7 +345,7 @@ function update() {
         .attr("fill", "black")
         .attr("font-weight", "bold")
         .text("0%");
-
+      // Line attributes
       s_svg.append("line")
         .attr("class", "zero-line")
         .attr("x1", 0)
@@ -341,29 +355,29 @@ function update() {
         .attr("stroke", "black")
         .attr("stroke-s_width", 2);
     }
-
+    // Grid
     s_svg.append("g")
       .attr("class", "grid")
       .call(d3.axisLeft(y).tickSize(-s_width).tickFormat("").ticks(6));
-
+    // Line for market cap
     const line = d3.line()
       .defined(d => selectedMetric === "Market Cap" || d.change != null)
       .x(d => s_x(d.year))
       .y(d => y(selectedMetric === "Market Cap" ? d.marketCap : d.change));
-
+    // Area under market cap
     const area = d3.area()
       .defined(d => selectedMetric === "Market Cap" || d.change != null)
       .x(d => s_x(d.year))
       .y0(selectedMetric === "Market Cap" ? s_height : y(0))
       .y1(d => y(selectedMetric === "Market Cap" ? d.marketCap : d.change));
-
+    // Path
     const path = s_svg.append("path")
       .datum(parsedData)
       .attr("fill", "none")
       .attr("stroke", lineColor)
       .attr("stroke-s_width", 3)
       .attr("d", line);
-
+    // For animation
     const totalLength = path.node().getTotalLength();
 
     path.attr("stroke-dasharray", `${totalLength} ${totalLength}`)
@@ -379,7 +393,7 @@ function update() {
       .attr("fill", areaColor)
       .attr("opacity", 0.4)
       .attr("d", area);
-
+    // Tooltip data
     s_svg.selectAll(".dot")
       .data(parsedData)
       .enter().append("circle")
@@ -412,12 +426,12 @@ function update() {
 init();
 
 // Pie chart visualization
-
+// SVG Margins for pie chart
 const pies_Margin = { top: 80, right: 100, bottom: 80, left: 100 };
 const pies_Width = 1000 - pies_Margin.left - pies_Margin.right;
 const pies_Height = 300 - pies_Margin.top - pies_Margin.bottom;
 const pieRadius = 100;
-
+// Container
 const pies_SvgContainer = d3.select('#vis2')
   .append('svg')
   .attr('width', pies_Width + pies_Margin.left + pies_Margin.right)
@@ -431,7 +445,7 @@ pies_SvgContainer.append('text')
   .style('font-size', '16px')
   .text('Select Year');
 
-// Add slider group
+// Add slider group -- Lab 4
 let targetYear = 2010;
 let sliders_Width = Math.min(pies_Width, 600);
 let yearSlider = d3.sliderHorizontal()
@@ -455,18 +469,20 @@ pies_SvgContainer.append('g')
 const pies_Svg = pies_SvgContainer
   .append('g')
   .attr('transform', `translate(${pies_Margin.left + pies_Width / 2}, ${pies_Margin.top + pies_Height / 2 + 50})`);
-
+// Color map
 const pieColor = d3.scaleOrdinal()
   .domain(['Tech', 'Other'])
   .range(['darkgreen', '#5dade2']);
-
+// Radius of the pie
 const arc = d3.arc()
   .innerRadius(pieRadius - 30)
   .outerRadius(pieRadius);
 
 const pie = d3.pie().value(d => d.value);
 
+// Draws the chart 
 function drawPieChart(year) {
+  // Data for the pie chart 
   Promise.all([
     d3.csv('data/TECH.csv'),
     d3.csv('data/OTHER.csv')
@@ -486,7 +502,7 @@ function drawPieChart(year) {
     const pieArcs = pie(pieData);
 
     const paths = pies_Svg.selectAll('path').data(pieArcs);
-
+    // Path for tech and other 
     paths.enter()
       .append('path')
       .attr('fill', d => pieColor(d.data.label))
@@ -507,10 +523,10 @@ function drawPieChart(year) {
 
     // Remove any previous percentage labels
     pies_Svg.selectAll('.pie-center-label').remove();
-
+    // Calculate the percentages
     const percentTech = ((techMC / total) * 100).toFixed(2) + '%';
     const percentOther = ((otherMC / total) * 100).toFixed(2) + '%';
-
+    
     pies_Svg.append('text')
       .attr('class', 'pie-center-label')
       .attr('text-anchor', 'middle')

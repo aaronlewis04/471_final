@@ -156,6 +156,7 @@ function createSeries(data) {
     return series
 }
 
+//chart for political contribution chart 
 function createContributionVis() {
 
     //set up scales 
@@ -170,12 +171,10 @@ function createContributionVis() {
 
 
     Csvg.append("g")
-        .attr("class", "axis axis--x")
         .attr("transform", `translate(0,${height - margin.bottom})`)
         .call(d3.axisBottom(x))
 
     Csvg.append("g")
-        .attr("class", "axis axis--y")
         .attr("transform", `translate(${margin.left},${-margin.bottom})`)
         .call(d3.axisLeft(y).ticks(10))
         .append("text")
@@ -183,7 +182,19 @@ function createContributionVis() {
             .attr("y", 6)
             .attr("dy", "0.71em")
             .attr("text-anchor", "end")
-            .text("Contributions");
+            .text("Contributions")
+
+    Csvg.append("text")
+        .attr("x", width / 2) 
+        .attr("y", height - 20) 
+        .text("Year")
+
+    Csvg.append("text")
+        .attr("transform", "rotate(-90)") 
+        .attr("y", 0 + 30)
+        .attr("x", 0 - (height / 2)) 
+        .text("Contributions (in Millions USD");
+
 
     //create bar chart
     Csvg.append("g")

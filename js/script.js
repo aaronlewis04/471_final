@@ -10,8 +10,75 @@ allData = []
 originalData = []
 options = ['nominal', 'normalized']
 type = options[1]
-const dataSourceLink = "https://www.kaggle.com/datasets/guillemservera/forbes-billionaires-1997-2023"; // Replace with your data source URL
-const dataSourceText = "Source: Forbes Billionaire Evolution"; // Text to display for the link
+dataSourceLink = "https://www.kaggle.com/datasets/guillemservera/forbes-billionaires-1997-2023"; 
+dataSourceText = "Source: Forbes Billionaire Evolution"; 
+
+contributionData = [
+  {
+    "year": 1990,
+    "contributions": 1
+  },
+  {
+    "year": 1992,
+    "contributions": 3
+  },
+  {
+    "year": 1994,
+    "contributions": 2
+  },
+  {
+    "year": 1996,
+    "contributions": 3
+  },
+  {
+    "year": 1998,
+    "contributions": 2
+  },
+  {
+    "year": 2000,
+    "contributions": 18
+  },
+  {
+    "year": 2002,
+    "contributions": 16
+  },
+  {
+    "year": 2004,
+    "contributions": 13
+  },
+  {
+    "year": 2006,
+    "contributions": 12
+  },
+  {
+    "year": 2008,
+    "contributions": 16
+  },
+  {
+    "year": 2010,
+    "contributions": 31
+  },
+  {
+    "year": 2012,
+    "contributions": 231
+  },
+  {
+    "year": 2014,
+    "contributions": 231
+  },
+  {
+    "year": 2016,
+    "contributions": 682
+  },
+  {
+    "year": 2018,
+    "contributions": 611
+  },
+  {
+    "year": 2020,
+    "contributions": 2632
+  }
+];
 
 // Create SVG
 const svg = d3.select('#BillVis')
@@ -19,6 +86,10 @@ const svg = d3.select('#BillVis')
     .attr('width', width)
     .attr('height', height)
 
+const Csvg = d3.select('#Contribution-Viz')
+    .append('svg')
+    .attr('width', width)
+    .attr('height', height)
 
 function parseIndustry(d) {
     if (d.business_industries.replace(/[\[\]']/g, "").trim() === "Technology") {
@@ -85,6 +156,76 @@ function createSeries(data) {
     return series
 }
 
+function createContributionVis() {
+
+    //set up scales 
+    const x = d3.scaleBand()
+        .domain(contributionData.map(function(d) { return d.year; }))
+        .range([margin.left, width - margin.right])
+        .padding(0.1)
+    
+    const y = d3.scaleLinear()
+        .domain([0, d3.max(contributionData, function(d) { return d.contributions; })])
+        .rangeRound([height, 100])
+
+
+    Csvg.append("g")
+        .attr("class", "axis axis--x")
+        .attr("transform", `translate(0,${height - margin.bottom})`)
+        .call(d3.axisBottom(x))
+
+    Csvg.append("g")
+        .attr("class", "axis axis--y")
+        .attr("transform", `translate(${margin.left},${-margin.bottom})`)
+        .call(d3.axisLeft(y).ticks(10))
+        .append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 6)
+            .attr("dy", "0.71em")
+            .attr("text-anchor", "end")
+            .text("Contributions");
+
+    //create bar chart
+    Csvg.append("g")
+        .attr("transform", `translate(0,${-margin.bottom})`)
+        .selectAll(".bar")
+        .data(contributionData)
+        .enter()
+        .append("rect")
+            .attr("class", "bar")
+            .attr("x", function(d) { return x(d.year); })
+            .attr("y", function(d) { return y(d.contributions); })
+            .attr("width", x.bandwidth())
+            .attr("height", function(d) { return height - y(d.contributions); })
+            .attr("fill", "#04672b")
+
+    //labels on top of bars
+    Csvg.selectAll(".bar-text")
+        .data(contributionData)
+        .enter()
+        .append("text")
+        .attr('font-size', '10px')
+        .attr("class", "bar-text")
+        .attr("text-anchor", "middle") 
+        .attr("x", function(d) { return x(d.year) + x.bandwidth() / 2}) 
+        .attr("y", function(d) { return y(d.contributions) - 5 - margin.bottom }) 
+        .text(function(d) { return d.contributions; }); 
+
+
+    //add clickable source
+    link = Csvg.append("a")
+        .attr("xlink:href", "https://americansfortaxfairness.org/billionaires-spending-39-times-federal-elections-since-citizens-united-supreme-court-decision-2010/") 
+        .attr("target", "_blank")
+
+
+    link.append("text")
+        .text("Election Contribution Data")
+        .attr("x", width - 10) 
+        .attr("y", height - 10) 
+        .attr("text-anchor", "end") 
+        .style("fill", "blue") 
+        .style("cursor", "pointer")
+}
 function createBillVis() {
     data = allData
     series = createSeries(data)
@@ -444,6 +585,7 @@ function createBillVis() {
 }
 
 function BillInit(){
+    createContributionVis()
     d3.csv(Billpath, convertTypes)
     .then(data => {
             const grouped = {};
